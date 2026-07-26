@@ -82,20 +82,22 @@ export function SegmentedControl<T extends string>({
   options,
   value,
   onChange,
+  disabled,
 }: {
   options: { label: string; value: T }[];
   value: T;
   onChange: (value: T) => void;
+  disabled?: boolean;
 }) {
   return (
-    <View style={styles.seg}>
+    <View style={[styles.seg, disabled && { opacity: 0.4, pointerEvents: 'none' }]}>
       {options.map((opt) => {
         const active = opt.value === value;
         return (
           <Pressable
             key={opt.value}
             accessibilityRole="radio"
-            accessibilityState={{ selected: active }}
+            accessibilityState={{ selected: active, disabled }}
             onPress={() => onChange(opt.value)}
             style={[styles.segOpt, active && styles.segOptActive]}
           >

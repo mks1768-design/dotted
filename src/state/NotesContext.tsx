@@ -31,6 +31,7 @@ type Ctx = {
   startEditingPhoto: () => void;
   stopEditingPhoto: () => void;
   setTone: (tone: Tone) => void;
+  setImprovePrompt: (prompt: string) => void;
   applyRewrite: () => void;
   backToEditor: () => void;
   capturePage: () => Promise<void>;
@@ -116,8 +117,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   }, [state.extractedText]);
 
   const applyRewrite = useCallback(() => {
-    dispatch({ type: 'APPLY_REWRITE', rewritten: rewriteFor(state.tone, state.draftBody) });
-  }, [state.tone, state.draftBody]);
+    dispatch({ type: 'APPLY_REWRITE', rewritten: rewriteFor(state.tone, state.draftBody, state.improvePrompt) });
+  }, [state.tone, state.draftBody, state.improvePrompt]);
 
   const value = useMemo<Ctx>(
     () => ({
@@ -139,6 +140,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       startEditingPhoto: () => dispatch({ type: 'START_EDITING_PHOTO' }),
       stopEditingPhoto: () => dispatch({ type: 'STOP_EDITING_PHOTO' }),
       setTone: (tone) => dispatch({ type: 'SET_TONE', tone }),
+      setImprovePrompt: (prompt) => dispatch({ type: 'SET_IMPROVE_PROMPT', prompt }),
       applyRewrite,
       backToEditor: () => dispatch({ type: 'BACK_TO_EDITOR' }),
       capturePage,

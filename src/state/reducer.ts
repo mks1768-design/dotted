@@ -17,6 +17,7 @@ export const initialState: AppState = {
   notePhotoEditing: false,
 
   tone: 'polish',
+  improvePrompt: '',
 
   scanImageUri: null,
   scanned: false,
@@ -33,6 +34,7 @@ const blankDraft = {
   draftColor: 'bg' as PaperStyleId,
   draftPhotoUri: null as string | null,
   notePhotoEditing: false,
+  improvePrompt: '',
 };
 
 export type Action =
@@ -52,6 +54,7 @@ export type Action =
   | { type: 'START_EDITING_PHOTO' }
   | { type: 'STOP_EDITING_PHOTO' }
   | { type: 'SET_TONE'; tone: Tone }
+  | { type: 'SET_IMPROVE_PROMPT'; prompt: string }
   | { type: 'APPLY_REWRITE'; rewritten: string }
   | { type: 'BACK_TO_EDITOR' }
   | { type: 'SET_SCAN_IMAGE'; uri: string }
@@ -91,6 +94,7 @@ export function reducer(state: AppState, action: Action): AppState {
         draftColor: n.color,
         draftPhotoUri: n.photoUri,
         notePhotoEditing: false,
+        improvePrompt: '',
         screen: screenForKind(n.kind),
         scanned: false,
       };
@@ -154,6 +158,9 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_TONE':
       return { ...state, tone: action.tone };
+
+    case 'SET_IMPROVE_PROMPT':
+      return { ...state, improvePrompt: action.prompt };
 
     case 'APPLY_REWRITE':
       return { ...state, draftBody: action.rewritten, screen: 'editor' };

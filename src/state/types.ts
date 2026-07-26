@@ -29,6 +29,7 @@ export type AppState = {
   notePhotoEditing: boolean;
 
   tone: Tone;
+  improvePrompt: string;
 
   scanImageUri: string | null;
   scanned: boolean;

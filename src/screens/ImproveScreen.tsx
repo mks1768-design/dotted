@@ -1,5 +1,5 @@
 import React from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Hr, SegmentedControl } from '../components/ui';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
@@ -16,12 +16,23 @@ const toneOptions: { label: string; value: Tone }[] = [
 ];
 
 export function ImproveScreen() {
-  const { state, backToHome, switchWrite, switchImprove, switchScan, setTone, backToEditor, applyRewrite } = useNotes();
+  const {
+    state,
+    backToHome,
+    switchWrite,
+    switchImprove,
+    switchScan,
+    setTone,
+    setImprovePrompt,
+    backToEditor,
+    applyRewrite,
+  } = useNotes();
   const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
 
   const hasDraft = !!state.draftBody.trim();
+  const hasPrompt = !!state.improvePrompt.trim();
   const originalText = hasDraft ? state.draftBody : 'Nothing written yet — go to Write and add some text first.';
-  const rewrittenText = rewriteFor(state.tone, state.draftBody);
+  const rewrittenText = rewriteFor(state.tone, state.draftBody, state.improvePrompt);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -42,7 +53,20 @@ export function ImproveScreen() {
           onChange={(kind) => kindHandlers[kind]()}
           options={noteKindOrder.map((k) => ({ label: noteKinds[k].segmentLabel, value: k }))}
         />
-        <SegmentedControl value={state.tone} onChange={setTone} options={toneOptions} />
+        <SegmentedControl value={state.tone} onChange={setTone} options={toneOptions} disabled={hasPrompt} />
+
+        <View>
+          <Text style={styles.kicker}>Or describe how</Text>
+          <TextInput
+            value={state.improvePrompt}
+            onChangeText={setImprovePrompt}
+            placeholder="e.g. “make it punchier”, “write it like a product update”…"
+            placeholderTextColor={colors.neutral700}
+            multiline
+            style={styles.promptInput}
+          />
+          {hasPrompt && <Text style={styles.promptHint}>Using your instruction instead of the tone above.</Text>}
+        </View>
 
         <View>
           <Text style={styles.kicker}>Original</Text>
@@ -73,6 +97,20 @@ const styles = StyleSheet.create({
   scroll: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
   hero: { alignItems: 'center', paddingVertical: 6 },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, marginBottom: 6 },
+  promptInput: {
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: 12,
+    padding: 12,
+    minHeight: 64,
+    fontFamily: fonts.body,
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.text,
+    textAlignVertical: 'top',
+    outlineWidth: 0,
+  },
+  promptHint: { fontFamily: fonts.body, fontSize: 12, color: colors.accent700, marginTop: 6 },
   originalText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
   suggestionText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },
   footer: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 28 },
