@@ -1,0 +1,38 @@
+import { NoteKind } from '../config/noteKinds';
+import { PaperStyleId } from '../config/paperStyles';
+import { ScreenName } from '../config/screens';
+
+export type Note = {
+  id: string;
+  title: string;
+  snippet: string;
+  date: string;
+  body: string;
+  kind: NoteKind;
+  color: PaperStyleId;
+  photoUri: string | null;
+};
+
+export type Tone = 'polish' | 'concise' | 'formal';
+
+export type AppState = {
+  hydrated: boolean;
+  screen: ScreenName;
+  notes: Note[];
+  editingId: string | null;
+
+  draftTitle: string;
+  draftBody: string;
+  draftKind: NoteKind;
+  draftColor: PaperStyleId;
+  draftPhotoUri: string | null;
+  notePhotoEditing: boolean;
+
+  tone: Tone;
+
+  scanImageUri: string | null;
+  scanned: boolean;
+  extractedText: string;
+  explainedText: string;
+  copiedCam: boolean;
+};
