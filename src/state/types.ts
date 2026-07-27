@@ -30,10 +30,15 @@ export type AppState = {
 
   tone: Tone;
   improvePrompt: string;
+  rewriteLoading: boolean;
 
   scanImageUri: string | null;
   scanned: boolean;
   extractedText: string;
   explainedText: string;
   copiedCam: boolean;
+  scanLoading: boolean;
+
+  apiKey: string | null;
+  aiError: string | null;
 };

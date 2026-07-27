@@ -4,11 +4,14 @@ import * as ImagePicker from 'expo-image-picker';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { NoteKind } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
+import { AnthropicError, explainScan, rewriteNote } from '../services/anthropic';
+import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secureStorage';
 import { initialState, reducer } from './reducer';
 import { rewriteFor } from './rewrite';
 import { AppState, Note, Tone } from './types';
 
 const STORAGE_KEY = '@dotted/notes';
+const API_KEY_STORAGE_KEY = 'dotted.anthropicApiKey';
 const COPY_RESET_MS = 1500;
 const SPLASH_MS = 1600;
 
@@ -17,6 +20,7 @@ type Ctx = {
   skipSplash: () => void;
   backToHome: () => void;
   goNotesList: () => void;
+  goSettings: () => void;
   newNote: () => void;
   openNote: (note: Note) => void;
   storeNote: () => void;
@@ -32,11 +36,13 @@ type Ctx = {
   stopEditingPhoto: () => void;
   setTone: (tone: Tone) => void;
   setImprovePrompt: (prompt: string) => void;
-  applyRewrite: () => void;
+  applyRewrite: () => Promise<void>;
   backToEditor: () => void;
   capturePage: () => Promise<void>;
   copyScan: () => Promise<void>;
   insertScan: () => void;
+  setApiKey: (key: string) => Promise<void>;
+  clearApiKey: () => Promise<void>;
 };
 
 const NotesContext = createContext<Ctx | null>(null);
@@ -45,6 +51,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const [state, dispatch] = useReducer(reducer, initialState);
   const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const splashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const stateRef = useRef(state);
+  stateRef.current = state;
 
   // Hydrate persisted notes on mount.
   useEffect(() => {
@@ -56,6 +64,19 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
         dispatch({ type: 'HYDRATE', notes });
       })
       .catch(() => dispatch({ type: 'HYDRATE', notes: [] }));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Hydrate the locally-stored Anthropic API key on mount.
+  useEffect(() => {
+    let cancelled = false;
+    getSecureItem(API_KEY_STORAGE_KEY)
+      .then((key) => {
+        if (!cancelled) dispatch({ type: 'HYDRATE_API_KEY', apiKey: key });
+      })
+      .catch(() => dispatch({ type: 'HYDRATE_API_KEY', apiKey: null }));
     return () => {
       cancelled = true;
     };
@@ -82,6 +103,16 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   const switchKind = useCallback((kind: NoteKind) => dispatch({ type: 'SWITCH_KIND', kind }), []);
 
+  const setApiKey = useCallback(async (key: string) => {
+    await setSecureItem(API_KEY_STORAGE_KEY, key);
+    dispatch({ type: 'SET_API_KEY', apiKey: key });
+  }, []);
+
+  const clearApiKey = useCallback(async () => {
+    await deleteSecureItem(API_KEY_STORAGE_KEY);
+    dispatch({ type: 'SET_API_KEY', apiKey: null });
+  }, []);
+
   const pickPhoto = useCallback(async () => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (!permission.granted) return;
@@ -96,17 +127,40 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   const capturePage = useCallback(async () => {
     const permission = await ImagePicker.requestCameraPermissionsAsync();
-    let uri: string | null = null;
-    if (permission.granted) {
-      const result = await ImagePicker.launchCameraAsync({ quality: 0.85, aspect: [4, 3] });
-      if (!result.canceled) uri = result.assets?.[0]?.uri ?? null;
+    if (!permission.granted) {
+      dispatch({ type: 'SET_AI_ERROR', error: 'Camera permission was denied.' });
+      return;
     }
-    if (uri) dispatch({ type: 'SET_SCAN_IMAGE', uri });
-    dispatch({
-      type: 'SCAN_PAGE',
-      extractedText: 'Extracted text will appear here once scanning is connected.',
-      explainedText: "The AI's explanation of the page will appear here.",
+    const apiKey = stateRef.current.apiKey;
+    const result = await ImagePicker.launchCameraAsync({
+      quality: 0.85,
+      aspect: [4, 3],
+      base64: !!apiKey,
     });
+    const asset = result.canceled ? null : (result.assets?.[0] ?? null);
+    if (asset) dispatch({ type: 'SET_SCAN_IMAGE', uri: asset.uri });
+
+    if (!apiKey) {
+      // Reference mode has nothing to send anywhere, so it doesn't require a
+      // real photo — it mirrors the design prototype's placeholder behavior.
+      dispatch({
+        type: 'SCAN_PAGE',
+        extractedText: 'Extracted text will appear here once you add an API key in Settings.',
+        explainedText: 'Add an Anthropic API key in Settings to get a real explanation of the page.',
+      });
+      return;
+    }
+
+    if (!asset) return; // user canceled — nothing to send to the API
+
+    dispatch({ type: 'SET_SCAN_LOADING', loading: true });
+    try {
+      if (!asset.base64) throw new AnthropicError('Could not read the captured photo.');
+      const { extractedText, explainedText } = await explainScan(apiKey, asset.base64, asset.mimeType || 'image/jpeg');
+      dispatch({ type: 'SCAN_PAGE', extractedText, explainedText });
+    } catch (err) {
+      dispatch({ type: 'SET_AI_ERROR', error: err instanceof Error ? err.message : 'Scan failed.' });
+    }
   }, []);
 
   const copyScan = useCallback(async () => {
@@ -116,9 +170,20 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     copyTimer.current = setTimeout(() => dispatch({ type: 'SET_COPIED', copied: false }), COPY_RESET_MS);
   }, [state.extractedText]);
 
-  const applyRewrite = useCallback(() => {
-    dispatch({ type: 'APPLY_REWRITE', rewritten: rewriteFor(state.tone, state.draftBody, state.improvePrompt) });
-  }, [state.tone, state.draftBody, state.improvePrompt]);
+  const applyRewrite = useCallback(async () => {
+    const { apiKey, tone, draftBody, improvePrompt } = stateRef.current;
+    if (!apiKey) {
+      dispatch({ type: 'APPLY_REWRITE', rewritten: rewriteFor(tone, draftBody, improvePrompt) });
+      return;
+    }
+    dispatch({ type: 'SET_REWRITE_LOADING', loading: true });
+    try {
+      const rewritten = await rewriteNote(apiKey, draftBody, { tone, prompt: improvePrompt });
+      dispatch({ type: 'APPLY_REWRITE', rewritten });
+    } catch (err) {
+      dispatch({ type: 'SET_AI_ERROR', error: err instanceof Error ? err.message : 'Rewrite failed.' });
+    }
+  }, []);
 
   const value = useMemo<Ctx>(
     () => ({
@@ -126,6 +191,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       skipSplash,
       backToHome: () => dispatch({ type: 'GO_HOME' }),
       goNotesList: () => dispatch({ type: 'GO_NOTES_LIST' }),
+      goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
       newNote: () => dispatch({ type: 'NEW_NOTE' }),
       openNote: (note) => dispatch({ type: 'OPEN_NOTE', note }),
       storeNote: () => dispatch({ type: 'STORE_NOTE' }),
@@ -146,8 +212,10 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       capturePage,
       copyScan,
       insertScan: () => dispatch({ type: 'INSERT_SCAN' }),
+      setApiKey,
+      clearApiKey,
     }),
-    [state, skipSplash, switchKind, pickPhoto, applyRewrite, capturePage, copyScan]
+    [state, skipSplash, switchKind, pickPhoto, applyRewrite, capturePage, copyScan, setApiKey, clearApiKey]
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;

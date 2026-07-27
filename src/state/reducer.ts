@@ -18,12 +18,17 @@ export const initialState: AppState = {
 
   tone: 'polish',
   improvePrompt: '',
+  rewriteLoading: false,
 
   scanImageUri: null,
   scanned: false,
   extractedText: '',
   explainedText: '',
   copiedCam: false,
+  scanLoading: false,
+
+  apiKey: null,
+  aiError: null,
 };
 
 const blankDraft = {
@@ -35,13 +40,17 @@ const blankDraft = {
   draftPhotoUri: null as string | null,
   notePhotoEditing: false,
   improvePrompt: '',
+  aiError: null as string | null,
 };
 
 export type Action =
   | { type: 'HYDRATE'; notes: Note[] }
+  | { type: 'HYDRATE_API_KEY'; apiKey: string | null }
+  | { type: 'SET_API_KEY'; apiKey: string | null }
   | { type: 'SKIP_SPLASH' }
   | { type: 'GO_HOME' }
   | { type: 'GO_NOTES_LIST' }
+  | { type: 'GO_SETTINGS' }
   | { type: 'NEW_NOTE' }
   | { type: 'OPEN_NOTE'; note: Note }
   | { type: 'STORE_NOTE' }
@@ -55,11 +64,14 @@ export type Action =
   | { type: 'STOP_EDITING_PHOTO' }
   | { type: 'SET_TONE'; tone: Tone }
   | { type: 'SET_IMPROVE_PROMPT'; prompt: string }
+  | { type: 'SET_REWRITE_LOADING'; loading: boolean }
   | { type: 'APPLY_REWRITE'; rewritten: string }
   | { type: 'BACK_TO_EDITOR' }
   | { type: 'SET_SCAN_IMAGE'; uri: string }
+  | { type: 'SET_SCAN_LOADING'; loading: boolean }
   | { type: 'SCAN_PAGE'; extractedText: string; explainedText: string }
   | { type: 'SET_COPIED'; copied: boolean }
+  | { type: 'SET_AI_ERROR'; error: string | null }
   | { type: 'INSERT_SCAN' };
 
 function screenForKind(kind: NoteKind): ScreenName {
@@ -71,14 +83,23 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'HYDRATE':
       return { ...state, notes: action.notes, hydrated: true };
 
+    case 'HYDRATE_API_KEY':
+      return { ...state, apiKey: action.apiKey };
+
+    case 'SET_API_KEY':
+      return { ...state, apiKey: action.apiKey };
+
     case 'SKIP_SPLASH':
       return state.screen === 'splash' ? { ...state, screen: 'home' } : state;
 
     case 'GO_HOME':
-      return { ...state, screen: 'home' };
+      return { ...state, screen: 'home', aiError: null };
 
     case 'GO_NOTES_LIST':
-      return { ...state, screen: 'library' };
+      return { ...state, screen: 'library', aiError: null };
+
+    case 'GO_SETTINGS':
+      return { ...state, screen: 'settings' };
 
     case 'NEW_NOTE':
       return { ...state, ...blankDraft, screen: 'editor' };
@@ -95,6 +116,7 @@ export function reducer(state: AppState, action: Action): AppState {
         draftPhotoUri: n.photoUri,
         notePhotoEditing: false,
         improvePrompt: '',
+        aiError: null,
         screen: screenForKind(n.kind),
         scanned: false,
       };
@@ -139,6 +161,7 @@ export function reducer(state: AppState, action: Action): AppState {
         draftKind: action.kind,
         screen: screenForKind(action.kind),
         scanned: false,
+        aiError: null,
       };
 
     case 'SET_COLOR':
@@ -157,25 +180,41 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, notePhotoEditing: false };
 
     case 'SET_TONE':
-      return { ...state, tone: action.tone };
+      return { ...state, tone: action.tone, aiError: null };
 
     case 'SET_IMPROVE_PROMPT':
-      return { ...state, improvePrompt: action.prompt };
+      return { ...state, improvePrompt: action.prompt, aiError: null };
+
+    case 'SET_REWRITE_LOADING':
+      return { ...state, rewriteLoading: action.loading };
 
     case 'APPLY_REWRITE':
-      return { ...state, draftBody: action.rewritten, screen: 'editor' };
+      return { ...state, draftBody: action.rewritten, screen: 'editor', rewriteLoading: false, aiError: null };
 
     case 'BACK_TO_EDITOR':
-      return { ...state, screen: 'editor' };
+      return { ...state, screen: 'editor', aiError: null };
 
     case 'SET_SCAN_IMAGE':
       return { ...state, scanImageUri: action.uri };
 
+    case 'SET_SCAN_LOADING':
+      return { ...state, scanLoading: action.loading };
+
     case 'SCAN_PAGE':
-      return { ...state, scanned: true, extractedText: action.extractedText, explainedText: action.explainedText };
+      return {
+        ...state,
+        scanned: true,
+        extractedText: action.extractedText,
+        explainedText: action.explainedText,
+        scanLoading: false,
+        aiError: null,
+      };
 
     case 'SET_COPIED':
       return { ...state, copiedCam: action.copied };
+
+    case 'SET_AI_ERROR':
+      return { ...state, aiError: action.error, rewriteLoading: false, scanLoading: false };
 
     case 'INSERT_SCAN':
       return {

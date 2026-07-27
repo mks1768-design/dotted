@@ -43,7 +43,16 @@ export function ScanScreen() {
         </View>
 
         {!state.scanned ? (
-          <Button title="Capture page" onPress={capturePage} block />
+          <>
+            <Button
+              title={state.scanLoading ? 'Reading the page…' : 'Capture page'}
+              onPress={capturePage}
+              disabled={state.scanLoading}
+              loading={state.scanLoading}
+              block
+            />
+            {state.aiError && <Text style={styles.errorText}>{state.aiError}</Text>}
+          </>
         ) : (
           <>
             <View>
@@ -103,4 +112,5 @@ const styles = StyleSheet.create({
   extractedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },
   explainedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
   actionsRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
+  errorText: { fontFamily: fonts.body, fontSize: 13, color: '#a13b2b' },
 });

@@ -3,12 +3,12 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
-import { ChevronRightIcon, DotMark } from '../icons';
+import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes } from '../theme/tokens';
 
 export function HomeScreen() {
-  const { state, goNotesList, switchWrite, switchImprove, switchScan } = useNotes();
+  const { state, goNotesList, switchWrite, switchImprove, switchScan, goSettings } = useNotes();
 
   const actionFor = (screenAction: (typeof homeMenu)[number]) => {
     if (screenAction.id === 'store') return goNotesList;
@@ -24,7 +24,12 @@ export function HomeScreen() {
           <DotMark size={26} />
           <Text style={styles.wordmark}>dotted</Text>
         </View>
-        <Tag label={`${state.notes.length} saved`} variant="accent" />
+        <View style={styles.headerRight}>
+          <Tag label={`${state.notes.length} saved`} variant="accent" />
+          <Pressable onPress={goSettings} style={styles.settingsBtn} accessibilityRole="button" accessibilityLabel="Settings">
+            <SettingsIcon size={18} />
+          </Pressable>
+        </View>
       </View>
 
       <View style={styles.rows}>
@@ -66,6 +71,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  settingsBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
   rows: { flex: 1 },
   hr: { height: StyleSheet.hairlineWidth, backgroundColor: colors.divider },

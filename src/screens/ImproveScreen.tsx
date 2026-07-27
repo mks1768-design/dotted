@@ -31,8 +31,9 @@ export function ImproveScreen() {
 
   const hasDraft = !!state.draftBody.trim();
   const hasPrompt = !!state.improvePrompt.trim();
+  const hasKey = !!state.apiKey;
   const originalText = hasDraft ? state.draftBody : 'Nothing written yet — go to Write and add some text first.';
-  const rewrittenText = rewriteFor(state.tone, state.draftBody, state.improvePrompt);
+  const referencePreview = rewriteFor(state.tone, state.draftBody, state.improvePrompt);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -73,17 +74,35 @@ export function ImproveScreen() {
           <Text style={styles.originalText}>{originalText}</Text>
         </View>
         <Hr />
-        {hasDraft && (
-          <View>
-            <Text style={styles.kicker}>Suggestion</Text>
-            <Text style={styles.suggestionText}>{rewrittenText}</Text>
-          </View>
+
+        {hasKey ? (
+          hasDraft && (
+            <Text style={styles.aiHint}>
+              {state.rewriteLoading ? 'Claude is rewriting your note…' : 'Tap Apply to rewrite this note with Claude.'}
+            </Text>
+          )
+        ) : (
+          hasDraft && (
+            <View>
+              <Text style={styles.kicker}>Suggestion (reference preview — add an API key in Settings for real AI)</Text>
+              <Text style={styles.suggestionText}>{referencePreview}</Text>
+            </View>
+          )
         )}
+
+        {state.aiError && <Text style={styles.errorText}>{state.aiError}</Text>}
       </ScrollView>
 
       <View style={styles.footer}>
         <Button title="Discard" variant="ghost" onPress={backToEditor} style={{ flex: 1 }} />
-        <Button title="Apply" variant="primary" onPress={applyRewrite} disabled={!hasDraft} style={{ flex: 1 }} />
+        <Button
+          title="Apply"
+          variant="primary"
+          onPress={applyRewrite}
+          disabled={!hasDraft || state.rewriteLoading}
+          loading={state.rewriteLoading}
+          style={{ flex: 1 }}
+        />
       </View>
     </SafeAreaView>
   );
@@ -113,5 +132,7 @@ const styles = StyleSheet.create({
   promptHint: { fontFamily: fonts.body, fontSize: 12, color: colors.accent700, marginTop: 6 },
   originalText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
   suggestionText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },
+  aiHint: { fontFamily: fonts.body, fontSize: 14, color: colors.neutral700, fontStyle: 'italic' },
+  errorText: { fontFamily: fonts.body, fontSize: 13, color: '#a13b2b' },
   footer: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 28 },
 });

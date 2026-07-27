@@ -4,6 +4,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
 import { NotesListScreen } from './screens/NotesListScreen';
 import { ScanScreen } from './screens/ScanScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { SplashScreen } from './screens/SplashScreen';
 import { useNotes } from './state/NotesContext';
 
@@ -25,6 +26,8 @@ export function RootView() {
       return <ImproveScreen />;
     case 'camera':
       return <ScanScreen />;
+    case 'settings':
+      return <SettingsScreen />;
     case 'splash':
     default:
       return <SplashScreen />;
