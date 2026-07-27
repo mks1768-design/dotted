@@ -5,6 +5,7 @@ import { NoteBoard } from '../components/NoteBoard';
 import { Card, Hr, Tag } from '../components/ui';
 import { noteKinds } from '../config/noteKinds';
 import { BoardIcon, BookIcon, BookshelfEmptyIcon, ChevronLeftIcon, ListIcon, PlusIcon, ShareIcon } from '../icons';
+import { formatNoteDate } from '../state/formatDate';
 import { useNotes } from '../state/NotesContext';
 import { Note } from '../state/types';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
@@ -64,7 +65,7 @@ export function NotesListScreen() {
           renderItem={({ item }: { item: Note }) => (
             <Card onPress={() => openNote(item)} style={styles.card}>
               <View style={styles.cardTop}>
-                <Text style={styles.kicker}>{item.date}</Text>
+                <Text style={styles.kicker}>{formatNoteDate(item.createdAt)}</Text>
                 <View style={styles.cardTopRight}>
                   <Tag label={noteKinds[item.kind].label} variant="outline" />
                   <Pressable

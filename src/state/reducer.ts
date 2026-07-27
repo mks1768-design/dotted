@@ -1,6 +1,7 @@
 import { NoteKind, noteKinds } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
 import { ScreenName } from '../config/screens';
+import { generateId } from './id';
 import { AppState, Note, Tone } from './types';
 
 export const initialState: AppState = {
@@ -137,10 +138,10 @@ export function reducer(state: AppState, action: Action): AppState {
         };
       }
       const newNote: Note = {
-        id: String(Date.now()),
+        id: generateId(),
         title,
         snippet,
-        date: 'Today',
+        createdAt: Date.now(),
         body: state.draftBody,
         kind: state.draftKind,
         color: state.draftColor,

@@ -7,6 +7,7 @@ import { NoteKind } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
 import { AnthropicError, explainScan, rewriteNote } from '../services/anthropic';
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secureStorage';
+import { generateId } from './id';
 import { initialState, reducer } from './reducer';
 import { rewriteFor } from './rewrite';
 import { AppState, Note, Tone } from './types';
@@ -55,14 +56,29 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const splashTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const stateRef = useRef(state);
   stateRef.current = state;
+  // Bumped every time the draft switches to a different note (new or opened),
+  // so a slow AI response for the PREVIOUS note can recognize it's stale and
+  // avoid overwriting whatever note is open by the time it resolves.
+  const draftGeneration = useRef(0);
 
-  // Hydrate persisted notes on mount.
+  // Hydrate persisted notes on mount. Backfills fields for notes saved by an
+  // older build (e.g. before createdAt existed) so old local data can't crash render.
   useEffect(() => {
     let cancelled = false;
     AsyncStorage.getItem(STORAGE_KEY)
       .then((raw) => {
         if (cancelled) return;
-        const notes: Note[] = raw ? JSON.parse(raw) : [];
+        const parsed: Partial<Note>[] = raw ? JSON.parse(raw) : [];
+        const notes: Note[] = parsed.map((n, i) => ({
+          id: n.id || generateId(),
+          title: n.title ?? 'Untitled',
+          snippet: n.snippet ?? '',
+          createdAt: typeof n.createdAt === 'number' ? n.createdAt : Date.now() - i,
+          body: n.body ?? '',
+          kind: n.kind ?? 'write',
+          color: n.color ?? 'bg',
+          photoUri: n.photoUri ?? null,
+        }));
         dispatch({ type: 'HYDRATE', notes });
       })
       .catch(() => dispatch({ type: 'HYDRATE', notes: [] }));
@@ -105,6 +121,16 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   const switchKind = useCallback((kind: NoteKind) => dispatch({ type: 'SWITCH_KIND', kind }), []);
 
+  const newNote = useCallback(() => {
+    draftGeneration.current += 1;
+    dispatch({ type: 'NEW_NOTE' });
+  }, []);
+
+  const openNote = useCallback((note: Note) => {
+    draftGeneration.current += 1;
+    dispatch({ type: 'OPEN_NOTE', note });
+  }, []);
+
   const setApiKey = useCallback(async (key: string) => {
     await setSecureItem(API_KEY_STORAGE_KEY, key);
     dispatch({ type: 'SET_API_KEY', apiKey: key });
@@ -128,9 +154,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const capturePage = useCallback(async () => {
+    const myGeneration = draftGeneration.current;
+    dispatch({ type: 'SET_SCAN_LOADING', loading: true });
+
     const permission = await ImagePicker.requestCameraPermissionsAsync();
     if (!permission.granted) {
-      dispatch({ type: 'SET_AI_ERROR', error: 'Camera permission was denied.' });
+      if (draftGeneration.current === myGeneration) {
+        dispatch({ type: 'SET_AI_ERROR', error: 'Camera permission was denied.' });
+      }
       return;
     }
     const apiKey = stateRef.current.apiKey;
@@ -139,6 +170,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       aspect: [4, 3],
       base64: !!apiKey,
     });
+    if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
+
     const asset = result.canceled ? null : (result.assets?.[0] ?? null);
     if (asset) dispatch({ type: 'SET_SCAN_IMAGE', uri: asset.uri });
 
@@ -153,14 +186,18 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
-    if (!asset) return; // user canceled — nothing to send to the API
+    if (!asset) {
+      dispatch({ type: 'SET_SCAN_LOADING', loading: false }); // user canceled — nothing to send to the API
+      return;
+    }
 
-    dispatch({ type: 'SET_SCAN_LOADING', loading: true });
     try {
       if (!asset.base64) throw new AnthropicError('Could not read the captured photo.');
       const { extractedText, explainedText } = await explainScan(apiKey, asset.base64, asset.mimeType || 'image/jpeg');
+      if (draftGeneration.current !== myGeneration) return;
       dispatch({ type: 'SCAN_PAGE', extractedText, explainedText });
     } catch (err) {
+      if (draftGeneration.current !== myGeneration) return;
       dispatch({ type: 'SET_AI_ERROR', error: err instanceof Error ? err.message : 'Scan failed.' });
     }
   }, []);
@@ -178,11 +215,14 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'APPLY_REWRITE', rewritten: rewriteFor(tone, draftBody, improvePrompt) });
       return;
     }
+    const myGeneration = draftGeneration.current;
     dispatch({ type: 'SET_REWRITE_LOADING', loading: true });
     try {
       const rewritten = await rewriteNote(apiKey, draftBody, { tone, prompt: improvePrompt });
+      if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
       dispatch({ type: 'APPLY_REWRITE', rewritten });
     } catch (err) {
+      if (draftGeneration.current !== myGeneration) return;
       dispatch({ type: 'SET_AI_ERROR', error: err instanceof Error ? err.message : 'Rewrite failed.' });
     }
   }, []);
@@ -203,8 +243,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       backToHome: () => dispatch({ type: 'GO_HOME' }),
       goNotesList: () => dispatch({ type: 'GO_NOTES_LIST' }),
       goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
-      newNote: () => dispatch({ type: 'NEW_NOTE' }),
-      openNote: (note) => dispatch({ type: 'OPEN_NOTE', note }),
+      newNote,
+      openNote,
       storeNote: () => dispatch({ type: 'STORE_NOTE' }),
       setTitle: (title) => dispatch({ type: 'SET_TITLE', title }),
       setBody: (body) => dispatch({ type: 'SET_BODY', body }),
@@ -227,7 +267,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       clearApiKey,
       shareNote,
     }),
-    [state, skipSplash, switchKind, pickPhoto, applyRewrite, capturePage, copyScan, setApiKey, clearApiKey, shareNote]
+    [state, skipSplash, switchKind, newNote, openNote, pickPhoto, applyRewrite, capturePage, copyScan, setApiKey, clearApiKey, shareNote]
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;

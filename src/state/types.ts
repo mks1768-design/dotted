@@ -6,7 +6,7 @@ export type Note = {
   id: string;
   title: string;
   snippet: string;
-  date: string;
+  createdAt: number;
   body: string;
   kind: NoteKind;
   color: PaperStyleId;

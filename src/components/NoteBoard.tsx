@@ -9,13 +9,20 @@ import { colors, fonts, radii } from '../theme/tokens';
 const COLUMN_COUNT = 2;
 const COLUMN_GAP = 12;
 
+function hashSeed(id: string): number {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = (hash * 31 + id.charCodeAt(i)) | 0;
+  }
+  return Math.abs(hash);
+}
+
 // Pinterest-style masonry: photo notes get a varied "pin" height (deterministic
 // per note, so the layout doesn't reshuffle on every render); text notes size
 // to roughly how much they'd have to say.
 function estimatePinHeight(note: Note): number {
   if (note.color === 'photo' && note.photoUri) {
-    const seed = Number(note.id) % 97;
-    return 170 + (seed % 90);
+    return 170 + (hashSeed(note.id) % 90);
   }
   return 128 + Math.min(note.title.length + note.snippet.length, 160);
 }

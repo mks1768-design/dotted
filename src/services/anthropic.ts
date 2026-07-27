@@ -1,10 +1,14 @@
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const MODEL = 'claude-sonnet-5';
 const API_VERSION = '2023-06-01';
+const TIMEOUT_MS = 30000;
 
 export class AnthropicError extends Error {}
 
 async function callMessages(apiKey: string, body: Record<string, unknown>) {
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   let res: Response;
   try {
     res = await fetch(API_URL, {
@@ -17,9 +21,15 @@ async function callMessages(apiKey: string, body: Record<string, unknown>) {
         'anthropic-dangerous-direct-browser-access': 'true',
       },
       body: JSON.stringify(body),
+      signal: controller.signal,
     });
-  } catch {
+  } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw new AnthropicError('Anthropic took too long to respond — try again.');
+    }
     throw new AnthropicError('Could not reach Anthropic — check your connection.');
+  } finally {
+    clearTimeout(timeout);
   }
 
   const json = await res.json().catch(() => null);
