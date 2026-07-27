@@ -74,16 +74,22 @@ export async function explainScan(
 ): Promise<{ extractedText: string; explainedText: string }> {
   const json = await callMessages(apiKey, {
     model: MODEL,
-    max_tokens: 1000,
+    max_tokens: 1400,
     system:
-      'You transcribe a photographed book or document page and briefly explain it. ' +
+      "You help someone understand a page they just photographed from a book or document — read it the way a well-read " +
+      'friend would, looking over their shoulder. First, transcribe the visible text exactly as it appears (fix only ' +
+      'obvious OCR artifacts, keep original wording and paragraph breaks). Then write a short, genuinely useful ' +
+      'explanation: open with the main idea in one plain-language sentence, quietly define or unpack anything a ' +
+      'non-expert would stumble on (jargon, names, references, dense phrasing) inline rather than listing terms ' +
+      'separately, and if the passage supports it, close with one sentence on why it matters or what to take away. ' +
+      "Skip filler like \"this passage discusses\" or restating that you're an AI — get straight to the substance. " +
       'Reply with strict JSON only, no markdown fences: {"extractedText": string, "explainedText": string}.',
     messages: [
       {
         role: 'user',
         content: [
           { type: 'image', source: { type: 'base64', media_type: mimeType, data: base64 } },
-          { type: 'text', text: 'Transcribe the visible text, then explain what it means in plain English.' },
+          { type: 'text', text: 'Transcribe the visible text, then explain what it means.' },
         ],
       },
     ],

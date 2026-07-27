@@ -1,4 +1,5 @@
 import React from 'react';
+import { ScreenTransition } from './components/ScreenTransition';
 import { EditorScreen } from './screens/EditorScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
@@ -16,23 +17,32 @@ import { useNotes } from './state/NotesContext';
 export function RootView() {
   const { state } = useNotes();
 
-  switch (state.screen) {
-    case 'onboarding':
-      return <OnboardingScreen />;
-    case 'home':
-      return <HomeScreen />;
-    case 'library':
-      return <NotesListScreen />;
-    case 'editor':
-      return <EditorScreen />;
-    case 'ai':
-      return <ImproveScreen />;
-    case 'camera':
-      return <ScanScreen />;
-    case 'settings':
-      return <SettingsScreen />;
-    case 'splash':
-    default:
-      return <SplashScreen />;
+  if (state.screen === 'splash') {
+    // Splash has its own carefully-timed entrance (dot drop + wordmark fade) —
+    // stacking the generic screen-swap fade on top of it would just be noise.
+    return <SplashScreen />;
   }
+
+  const screen = (() => {
+    switch (state.screen) {
+      case 'onboarding':
+        return <OnboardingScreen />;
+      case 'home':
+        return <HomeScreen />;
+      case 'library':
+        return <NotesListScreen />;
+      case 'editor':
+        return <EditorScreen />;
+      case 'ai':
+        return <ImproveScreen />;
+      case 'camera':
+        return <ScanScreen />;
+      case 'settings':
+        return <SettingsScreen />;
+      default:
+        return <HomeScreen />;
+    }
+  })();
+
+  return <ScreenTransition transitionKey={state.screen}>{screen}</ScreenTransition>;
 }

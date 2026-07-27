@@ -60,7 +60,7 @@ export function ScanScreen() {
               <Text style={styles.extractedText}>{state.extractedText}</Text>
             </View>
             <Hr />
-            <View>
+            <View style={styles.explainBlock}>
               <Text style={styles.kicker}>What it means</Text>
               <Text style={styles.explainedText}>{state.explainedText}</Text>
             </View>
@@ -110,7 +110,8 @@ const styles = StyleSheet.create({
   viewfinderText: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700 },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, marginBottom: 6 },
   extractedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },
-  explainedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
+  explainBlock: { borderLeftWidth: 2, borderLeftColor: colors.accent, paddingLeft: 14 },
+  explainedText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },
   actionsRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
   errorText: { fontFamily: fonts.body, fontSize: 13, color: colors.danger },
 });
