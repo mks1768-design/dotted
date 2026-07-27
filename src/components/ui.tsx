@@ -20,7 +20,7 @@ export function Tag({
   );
 }
 
-type ButtonVariant = 'primary' | 'secondary' | 'ghost';
+type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 
 export function Button({
   title,
@@ -51,6 +51,7 @@ export function Button({
         variant === 'primary' && styles.btnPrimary,
         variant === 'secondary' && styles.btnSecondary,
         variant === 'ghost' && styles.btnGhost,
+        variant === 'destructive' && styles.btnDestructive,
         block && { width: '100%' },
         (disabled || loading) && { opacity: 0.4 },
         pressed && !disabled && { transform: [{ scale: 0.98 }] },
@@ -58,7 +59,7 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={variant === 'primary' ? colors.bg : colors.text} />
+        <ActivityIndicator size="small" color={variant === 'primary' || variant === 'destructive' ? colors.bg : colors.text} />
       ) : (
         <>
           {icon}
@@ -68,6 +69,7 @@ export function Button({
               variant === 'primary' && { color: colors.bg },
               variant === 'secondary' && { color: colors.text },
               variant === 'ghost' && { color: colors.neutral700 },
+              variant === 'destructive' && { color: colors.bg },
             ]}
           >
             {title}
@@ -166,6 +168,9 @@ const styles = StyleSheet.create({
   },
   btnGhost: {
     backgroundColor: 'transparent',
+  },
+  btnDestructive: {
+    backgroundColor: colors.danger,
   },
   btnText: {
     fontFamily: fonts.body,

@@ -2,7 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { paperBackgroundColor } from '../config/paperStyles';
-import { ShareIcon } from '../icons';
+import { ShareIcon, TrashIcon } from '../icons';
 import { Note } from '../state/types';
 import { colors, fonts, radii } from '../theme/tokens';
 
@@ -41,7 +41,17 @@ function splitIntoColumns(notes: Note[], columnCount: number): Note[][] {
   return columns;
 }
 
-function Pin({ note, onOpen, onShare }: { note: Note; onOpen: () => void; onShare: () => void }) {
+function Pin({
+  note,
+  onOpen,
+  onShare,
+  onDelete,
+}: {
+  note: Note;
+  onOpen: () => void;
+  onShare: () => void;
+  onDelete: () => void;
+}) {
   const isPhoto = note.color === 'photo' && !!note.photoUri;
   const height = estimatePinHeight(note);
 
@@ -76,18 +86,32 @@ function Pin({ note, onOpen, onShare }: { note: Note; onOpen: () => void; onShar
         </View>
       )}
 
-      <Pressable
-        onPress={(e) => {
-          e?.stopPropagation?.();
-          onShare();
-        }}
-        style={[styles.shareBtn, isPhoto && styles.shareBtnOnPhoto]}
-        accessibilityRole="button"
-        accessibilityLabel={`Share "${note.title}"`}
-        hitSlop={8}
-      >
-        <ShareIcon size={13} color={isPhoto ? '#fff' : colors.text} />
-      </Pressable>
+      <View style={styles.pinActions}>
+        <Pressable
+          onPress={(e) => {
+            e?.stopPropagation?.();
+            onShare();
+          }}
+          style={[styles.pinActionBtn, isPhoto && styles.pinActionBtnOnPhoto]}
+          accessibilityRole="button"
+          accessibilityLabel={`Share "${note.title}"`}
+          hitSlop={8}
+        >
+          <ShareIcon size={13} color={isPhoto ? '#fff' : colors.text} />
+        </Pressable>
+        <Pressable
+          onPress={(e) => {
+            e?.stopPropagation?.();
+            onDelete();
+          }}
+          style={[styles.pinActionBtn, isPhoto && styles.pinActionBtnOnPhoto]}
+          accessibilityRole="button"
+          accessibilityLabel={`Delete "${note.title}"`}
+          hitSlop={8}
+        >
+          <TrashIcon size={13} color={isPhoto ? '#fff' : colors.text} />
+        </Pressable>
+      </View>
     </Pressable>
   );
 }
@@ -96,10 +120,12 @@ export function NoteBoard({
   notes,
   onOpen,
   onShare,
+  onDelete,
 }: {
   notes: Note[];
   onOpen: (note: Note) => void;
   onShare: (note: Note) => void;
+  onDelete: (note: Note) => void;
 }) {
   const columns = splitIntoColumns(notes, COLUMN_COUNT);
 
@@ -109,7 +135,13 @@ export function NoteBoard({
         {columns.map((col, i) => (
           <View key={i} style={styles.column}>
             {col.map((note) => (
-              <Pin key={note.id} note={note} onOpen={() => onOpen(note)} onShare={() => onShare(note)} />
+              <Pin
+                key={note.id}
+                note={note}
+                onOpen={() => onOpen(note)}
+                onShare={() => onShare(note)}
+                onDelete={() => onDelete(note)}
+              />
             ))}
           </View>
         ))}
@@ -141,10 +173,14 @@ const styles = StyleSheet.create({
   pinTextInner: { flex: 1, padding: 12, gap: 6 },
   pinTitleFlat: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
   pinSnippetFlat: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.neutral700 },
-  shareBtn: {
+  pinActions: {
     position: 'absolute',
     top: 8,
     right: 8,
+    flexDirection: 'row',
+    gap: 6,
+  },
+  pinActionBtn: {
     width: 26,
     height: 26,
     borderRadius: 13,
@@ -152,7 +188,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: 'rgba(243,242,242,0.85)',
   },
-  shareBtnOnPhoto: {
+  pinActionBtnOnPhoto: {
     backgroundColor: 'rgba(32,31,29,0.45)',
   },
 });

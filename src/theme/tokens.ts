@@ -15,6 +15,8 @@ export const colors = {
   neutral700: '#6f6a64',
 
   divider: '#ddd8d2',
+
+  danger: '#a13b2b',
 };
 
 export const fonts = {

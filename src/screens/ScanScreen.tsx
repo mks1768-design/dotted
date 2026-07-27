@@ -112,5 +112,5 @@ const styles = StyleSheet.create({
   extractedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },
   explainedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
   actionsRow: { flexDirection: 'row', gap: 12, marginTop: 4 },
-  errorText: { fontFamily: fonts.body, fontSize: 13, color: '#a13b2b' },
+  errorText: { fontFamily: fonts.body, fontSize: 13, color: colors.danger },
 });

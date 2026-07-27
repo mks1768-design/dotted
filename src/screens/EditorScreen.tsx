@@ -1,12 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Button, Hr, SegmentedControl } from '../components/ui';
 import { RuledPaper } from '../components/RuledPaper';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
 import { paperBackgroundColor, paperStyles } from '../config/paperStyles';
-import { ChevronLeftIcon, CloseIcon, EditIcon, PhotoIcon } from '../icons';
+import { ChevronLeftIcon, CloseIcon, EditIcon, PhotoIcon, TrashIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes } from '../theme/tokens';
 
@@ -25,8 +26,10 @@ export function EditorScreen() {
     removePhoto,
     startEditingPhoto,
     stopEditingPhoto,
+    deleteNote,
   } = useNotes();
 
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
   const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
   const isPhoto = state.draftColor === 'photo';
 
@@ -36,7 +39,19 @@ export function EditorScreen() {
         <Pressable onPress={backToHome} style={styles.backBtn} accessibilityRole="button" accessibilityLabel="Back to home">
           <ChevronLeftIcon size={20} />
         </Pressable>
-        <Button title="Store" onPress={storeNote} />
+        <View style={styles.headerRight}>
+          {state.editingId != null && (
+            <Pressable
+              onPress={() => setConfirmingDelete(true)}
+              style={styles.deleteBtn}
+              accessibilityRole="button"
+              accessibilityLabel="Delete note"
+            >
+              <TrashIcon size={18} color={colors.neutral700} />
+            </Pressable>
+          )}
+          <Button title="Store" onPress={storeNote} />
+        </View>
       </View>
 
       <View style={styles.body}>
@@ -131,6 +146,17 @@ export function EditorScreen() {
           </View>
         )}
       </View>
+
+      <ConfirmDialog
+        visible={confirmingDelete}
+        title="Delete this note?"
+        message={`"${state.draftTitle.trim() || 'Untitled'}" will be gone for good — this can't be undone.`}
+        onConfirm={() => {
+          setConfirmingDelete(false);
+          if (state.editingId != null) deleteNote(state.editingId);
+        }}
+        onCancel={() => setConfirmingDelete(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -146,6 +172,8 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  deleteBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1, paddingHorizontal: 20, gap: 8 },
   paperRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 },
   paperLabel: {

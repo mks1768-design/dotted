@@ -73,7 +73,8 @@ export type Action =
   | { type: 'SCAN_PAGE'; extractedText: string; explainedText: string }
   | { type: 'SET_COPIED'; copied: boolean }
   | { type: 'SET_AI_ERROR'; error: string | null }
-  | { type: 'INSERT_SCAN' };
+  | { type: 'INSERT_SCAN' }
+  | { type: 'DELETE_NOTE'; id: string };
 
 function screenForKind(kind: NoteKind): ScreenName {
   return noteKinds[kind].screen;
@@ -223,6 +224,16 @@ export function reducer(state: AppState, action: Action): AppState {
         draftBody: (state.draftBody && state.draftBody.trim() ? state.draftBody + '\n\n' : '') + state.extractedText,
         screen: 'editor',
       };
+
+    case 'DELETE_NOTE': {
+      const notes = state.notes.filter((n) => n.id !== action.id);
+      if (state.editingId !== action.id) {
+        return { ...state, notes };
+      }
+      // Deleted the note currently open in the editor — back out to the
+      // library instead of leaving a stale draft pointed at a gone note.
+      return { ...state, notes, ...blankDraft, screen: 'library' };
+    }
 
     default:
       return state;

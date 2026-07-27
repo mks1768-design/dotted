@@ -133,6 +133,6 @@ const styles = StyleSheet.create({
   originalText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
   suggestionText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },
   aiHint: { fontFamily: fonts.body, fontSize: 14, color: colors.neutral700, fontStyle: 'italic' },
-  errorText: { fontFamily: fonts.body, fontSize: 13, color: '#a13b2b' },
+  errorText: { fontFamily: fonts.body, fontSize: 13, color: colors.danger },
   footer: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 28 },
 });

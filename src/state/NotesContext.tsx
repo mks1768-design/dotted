@@ -46,6 +46,7 @@ type Ctx = {
   setApiKey: (key: string) => Promise<void>;
   clearApiKey: () => Promise<void>;
   shareNote: (note: Note) => Promise<void>;
+  deleteNote: (id: string) => void;
 };
 
 const NotesContext = createContext<Ctx | null>(null);
@@ -236,6 +237,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const deleteNote = useCallback((id: string) => {
+    if (stateRef.current.editingId === id) draftGeneration.current += 1;
+    dispatch({ type: 'DELETE_NOTE', id });
+  }, []);
+
   const value = useMemo<Ctx>(
     () => ({
       state,
@@ -266,8 +272,23 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       setApiKey,
       clearApiKey,
       shareNote,
+      deleteNote,
     }),
-    [state, skipSplash, switchKind, newNote, openNote, pickPhoto, applyRewrite, capturePage, copyScan, setApiKey, clearApiKey, shareNote]
+    [
+      state,
+      skipSplash,
+      switchKind,
+      newNote,
+      openNote,
+      pickPhoto,
+      applyRewrite,
+      capturePage,
+      copyScan,
+      setApiKey,
+      clearApiKey,
+      shareNote,
+      deleteNote,
+    ]
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;
