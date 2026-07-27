@@ -6,6 +6,7 @@ import { Share } from 'react-native';
 import { NoteKind } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
 import { AnthropicError, explainScan, rewriteNote } from '../services/anthropic';
+import { exportBackup, importBackup } from '../services/backup';
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secureStorage';
 import { generateId } from './id';
 import { initialState, reducer } from './reducer';
@@ -47,6 +48,8 @@ type Ctx = {
   clearApiKey: () => Promise<void>;
   shareNote: (note: Note) => Promise<void>;
   deleteNote: (id: string) => void;
+  exportNotes: () => Promise<{ ok: true; count: number } | { ok: false; error: string }>;
+  importNotes: () => Promise<{ ok: true; count: number } | { ok: false; canceled: true } | { ok: false; error: string }>;
 };
 
 const NotesContext = createContext<Ctx | null>(null);
@@ -242,6 +245,19 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'DELETE_NOTE', id });
   }, []);
 
+  const exportNotes = useCallback(async () => {
+    const result = await exportBackup(stateRef.current.notes);
+    if (!result.ok) return result;
+    return { ok: true as const, count: stateRef.current.notes.length };
+  }, []);
+
+  const importNotes = useCallback(async () => {
+    const result = await importBackup();
+    if (!result.ok) return result;
+    dispatch({ type: 'IMPORT_NOTES', notes: result.notes });
+    return { ok: true as const, count: result.notes.length };
+  }, []);
+
   const value = useMemo<Ctx>(
     () => ({
       state,
@@ -273,6 +289,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       clearApiKey,
       shareNote,
       deleteNote,
+      exportNotes,
+      importNotes,
     }),
     [
       state,
@@ -288,6 +306,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       clearApiKey,
       shareNote,
       deleteNote,
+      exportNotes,
+      importNotes,
     ]
   );
 

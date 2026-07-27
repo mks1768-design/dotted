@@ -7,10 +7,14 @@ import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes } from '../theme/tokens';
 
 export function SettingsScreen() {
-  const { state, backToHome, setApiKey, clearApiKey } = useNotes();
+  const { state, backToHome, setApiKey, clearApiKey, exportNotes, importNotes } = useNotes();
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const hasKey = !!state.apiKey;
+
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+  const [backupStatus, setBackupStatus] = useState<{ text: string; isError: boolean } | null>(null);
 
   const onSave = async () => {
     if (!draft.trim()) return;
@@ -23,6 +27,31 @@ export function SettingsScreen() {
   const onClear = async () => {
     await clearApiKey();
     setDraft('');
+  };
+
+  const onExport = async () => {
+    setBackupStatus(null);
+    setExporting(true);
+    const result = await exportNotes();
+    setExporting(false);
+    setBackupStatus(
+      result.ok
+        ? { text: `Exported ${result.count} note${result.count === 1 ? '' : 's'}.`, isError: false }
+        : { text: result.error, isError: true }
+    );
+  };
+
+  const onImport = async () => {
+    setBackupStatus(null);
+    setImporting(true);
+    const result = await importNotes();
+    setImporting(false);
+    if ('canceled' in result) return;
+    setBackupStatus(
+      result.ok
+        ? { text: `Imported ${result.count} note${result.count === 1 ? '' : 's'}.`, isError: false }
+        : { text: result.error, isError: true }
+    );
   };
 
   return (
@@ -56,11 +85,38 @@ export function SettingsScreen() {
           {hasKey && <Button title="Remove key" variant="ghost" onPress={onClear} style={{ flex: 1 }} />}
         </View>
 
-        <Hr style={{ marginVertical: 8 }} />
-
         <Text style={styles.helpText}>
           Get a key at console.anthropic.com. It's stored only on this device (Keychain/Keystore on iOS and Android,
           local storage on web) and is sent straight from this app to Anthropic — dotted has no server of its own.
+        </Text>
+
+        <Hr style={{ marginVertical: 8 }} />
+
+        <View>
+          <Text style={styles.kicker}>Backup</Text>
+          <Text style={styles.status}>
+            Every note lives only on this device. Export a backup file every so often so a lost or wiped phone
+            doesn't mean losing what you've written.
+          </Text>
+        </View>
+
+        <View style={styles.actionsRow}>
+          <Button title="Export all notes" onPress={onExport} loading={exporting} disabled={importing} style={{ flex: 1 }} />
+          <Button
+            title="Import notes"
+            variant="secondary"
+            onPress={onImport}
+            loading={importing}
+            disabled={exporting}
+            style={{ flex: 1 }}
+          />
+        </View>
+        {backupStatus && (
+          <Text style={[styles.backupStatus, backupStatus.isError && styles.backupStatusError]}>{backupStatus.text}</Text>
+        )}
+        <Text style={styles.helpText}>
+          Import adds notes from a backup file alongside what's already here — it won't delete or overwrite
+          anything currently on this device.
         </Text>
       </ScrollView>
     </SafeAreaView>
@@ -87,4 +143,6 @@ const styles = StyleSheet.create({
   },
   actionsRow: { flexDirection: 'row', gap: 12 },
   helpText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.neutral700 },
+  backupStatus: { fontFamily: fonts.body, fontSize: 13, color: colors.accent700 },
+  backupStatusError: { color: colors.danger },
 });

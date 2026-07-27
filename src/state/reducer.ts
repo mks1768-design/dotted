@@ -74,7 +74,8 @@ export type Action =
   | { type: 'SET_COPIED'; copied: boolean }
   | { type: 'SET_AI_ERROR'; error: string | null }
   | { type: 'INSERT_SCAN' }
-  | { type: 'DELETE_NOTE'; id: string };
+  | { type: 'DELETE_NOTE'; id: string }
+  | { type: 'IMPORT_NOTES'; notes: Note[] };
 
 function screenForKind(kind: NoteKind): ScreenName {
   return noteKinds[kind].screen;
@@ -234,6 +235,9 @@ export function reducer(state: AppState, action: Action): AppState {
       // library instead of leaving a stale draft pointed at a gone note.
       return { ...state, notes, ...blankDraft, screen: 'library' };
     }
+
+    case 'IMPORT_NOTES':
+      return { ...state, notes: [...action.notes, ...state.notes] };
 
     default:
       return state;
