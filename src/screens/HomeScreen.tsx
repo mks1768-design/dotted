@@ -5,7 +5,7 @@ import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
 import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
 export function HomeScreen() {
   const { state, goNotesList, switchWrite, switchImprove, switchScan, goSettings } = useNotes();
@@ -33,28 +33,31 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.rows}>
-        {homeMenu.map((item, i) => {
+        {homeMenu.map((item) => {
           const Icon = item.icon;
           return (
-            <React.Fragment key={item.id}>
-              {i > 0 && <View style={styles.hr} />}
-              <Pressable
-                onPress={actionFor(item)}
-                style={({ pressed, hovered }: any) => [
-                  styles.row,
-                  hovered && { backgroundColor: colors.accent100 },
-                  pressed && { backgroundColor: colors.accent100, transform: [{ scale: 0.98 }] },
-                ]}
-              >
-                <View style={styles.rowLeft}>
-                  <Icon size={52} />
-                  <Text style={styles.rowLabel}>{item.label}</Text>
-                </View>
-                <ChevronRightIcon />
-              </Pressable>
-            </React.Fragment>
+            <Pressable
+              key={item.id}
+              onPress={actionFor(item)}
+              style={({ pressed, hovered }: any) => [
+                styles.row,
+                hovered && styles.rowHovered,
+                pressed && styles.rowPressed,
+              ]}
+            >
+              <View style={styles.rowLeft}>
+                <Icon size={48} />
+                <Text style={styles.rowLabel}>{item.label}</Text>
+              </View>
+              <ChevronRightIcon />
+            </Pressable>
           );
         })}
+      </View>
+
+      <View style={styles.footer}>
+        <DotMark size={64} color={colors.divider} />
+        <Text style={styles.footerText}>built around one small, recurring mark.</Text>
       </View>
     </SafeAreaView>
   );
@@ -74,16 +77,24 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   settingsBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
-  rows: { flex: 1 },
-  hr: { height: StyleSheet.hairlineWidth, backgroundColor: colors.divider },
+  rows: { paddingHorizontal: 20, paddingTop: 10, gap: 14 },
   row: {
-    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.surface,
+    ...shadows.sm,
   },
+  rowHovered: { borderColor: colors.accent300 },
+  rowPressed: { backgroundColor: colors.accent100, transform: [{ scale: 0.98 }] },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   rowLabel: { fontFamily: fonts.heading, fontSize: fontSizes.homeRowLabel, color: colors.text },
+  footer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingBottom: 20 },
+  footerText: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, letterSpacing: 0.2, fontStyle: 'italic' },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { colors, fonts, fontSizes, radii } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
 export function Hr({ style }: { style?: ViewStyle }) {
   return <View style={[styles.hr, style]} />;
@@ -206,8 +206,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.divider,
     borderRadius: radii.md,
-    padding: 14,
-    backgroundColor: colors.bg,
+    padding: 16,
+    backgroundColor: colors.surface,
     gap: 6,
+    ...shadows.sm,
   },
 });
