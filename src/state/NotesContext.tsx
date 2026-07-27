@@ -17,7 +17,7 @@ const STORAGE_KEY = '@dotted/notes';
 const API_KEY_STORAGE_KEY = 'dotted.anthropicApiKey';
 const ONBOARDED_STORAGE_KEY = '@dotted/hasOnboarded';
 const COPY_RESET_MS = 1500;
-const SPLASH_MS = 2300; // roll+bounce (1300) + wordmark fade starting at 1220, ending ~1770, plus a short settle
+const SPLASH_MS = 1600;
 
 type Ctx = {
   state: AppState;
