@@ -17,6 +17,7 @@ export type Tone = 'polish' | 'concise' | 'formal';
 
 export type AppState = {
   hydrated: boolean;
+  hasOnboarded: boolean;
   screen: ScreenName;
   notes: Note[];
   editingId: string | null;

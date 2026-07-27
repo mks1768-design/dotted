@@ -15,12 +15,14 @@ import { AppState, Note, Tone } from './types';
 
 const STORAGE_KEY = '@dotted/notes';
 const API_KEY_STORAGE_KEY = 'dotted.anthropicApiKey';
+const ONBOARDED_STORAGE_KEY = '@dotted/hasOnboarded';
 const COPY_RESET_MS = 1500;
 const SPLASH_MS = 1600;
 
 type Ctx = {
   state: AppState;
   skipSplash: () => void;
+  completeOnboarding: () => void;
   backToHome: () => void;
   goNotesList: () => void;
   goSettings: () => void;
@@ -104,6 +106,19 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Hydrate whether the first-launch onboarding has already been completed.
+  useEffect(() => {
+    let cancelled = false;
+    AsyncStorage.getItem(ONBOARDED_STORAGE_KEY)
+      .then((value) => {
+        if (!cancelled) dispatch({ type: 'HYDRATE_ONBOARDED', value: value === '1' });
+      })
+      .catch(() => dispatch({ type: 'HYDRATE_ONBOARDED', value: false }));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Persist notes whenever they change (after initial hydration).
   useEffect(() => {
     if (!state.hydrated) return;
@@ -121,6 +136,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const skipSplash = useCallback(() => {
     if (splashTimer.current) clearTimeout(splashTimer.current);
     dispatch({ type: 'SKIP_SPLASH' });
+  }, []);
+
+  const completeOnboarding = useCallback(() => {
+    AsyncStorage.setItem(ONBOARDED_STORAGE_KEY, '1').catch(() => {});
+    dispatch({ type: 'COMPLETE_ONBOARDING' });
   }, []);
 
   const switchKind = useCallback((kind: NoteKind) => dispatch({ type: 'SWITCH_KIND', kind }), []);
@@ -262,6 +282,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     () => ({
       state,
       skipSplash,
+      completeOnboarding,
       backToHome: () => dispatch({ type: 'GO_HOME' }),
       goNotesList: () => dispatch({ type: 'GO_NOTES_LIST' }),
       goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
@@ -295,6 +316,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     [
       state,
       skipSplash,
+      completeOnboarding,
       switchKind,
       newNote,
       openNote,

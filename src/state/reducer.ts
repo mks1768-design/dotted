@@ -6,6 +6,7 @@ import { AppState, Note, Tone } from './types';
 
 export const initialState: AppState = {
   hydrated: false,
+  hasOnboarded: false,
   screen: 'splash',
   notes: [],
   editingId: null,
@@ -48,6 +49,8 @@ export type Action =
   | { type: 'HYDRATE'; notes: Note[] }
   | { type: 'HYDRATE_API_KEY'; apiKey: string | null }
   | { type: 'SET_API_KEY'; apiKey: string | null }
+  | { type: 'HYDRATE_ONBOARDED'; value: boolean }
+  | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'SKIP_SPLASH' }
   | { type: 'GO_HOME' }
   | { type: 'GO_NOTES_LIST' }
@@ -92,8 +95,14 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'SET_API_KEY':
       return { ...state, apiKey: action.apiKey };
 
+    case 'HYDRATE_ONBOARDED':
+      return { ...state, hasOnboarded: action.value };
+
+    case 'COMPLETE_ONBOARDING':
+      return { ...state, hasOnboarded: true, screen: 'home' };
+
     case 'SKIP_SPLASH':
-      return state.screen === 'splash' ? { ...state, screen: 'home' } : state;
+      return state.screen === 'splash' ? { ...state, screen: state.hasOnboarded ? 'home' : 'onboarding' } : state;
 
     case 'GO_HOME':
       return { ...state, screen: 'home', aiError: null };

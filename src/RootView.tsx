@@ -3,6 +3,7 @@ import { EditorScreen } from './screens/EditorScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
 import { NotesListScreen } from './screens/NotesListScreen';
+import { OnboardingScreen } from './screens/OnboardingScreen';
 import { ScanScreen } from './screens/ScanScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SplashScreen } from './screens/SplashScreen';
@@ -16,6 +17,8 @@ export function RootView() {
   const { state } = useNotes();
 
   switch (state.screen) {
+    case 'onboarding':
+      return <OnboardingScreen />;
     case 'home':
       return <HomeScreen />;
     case 'library':
