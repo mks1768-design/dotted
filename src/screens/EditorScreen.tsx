@@ -104,7 +104,7 @@ export function EditorScreen() {
                   </>
                 ) : (
                   <>
-                    <LinearGradient colors={['transparent', 'rgba(243,242,242,0.9)']} style={styles.captionGradient}>
+                    <LinearGradient colors={['rgba(243,242,242,0.92)', 'transparent']} style={styles.captionGradient}>
                       <Text style={styles.captionText}>
                         {state.draftBody.trim() ? state.draftBody : 'Tap the pencil to add words to this note.'}
                       </Text>
@@ -231,10 +231,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     left: 0,
     right: 0,
-    bottom: 0,
+    top: 0,
     paddingHorizontal: 16,
-    paddingTop: 30,
-    paddingBottom: 16,
+    paddingTop: 16,
+    paddingBottom: 30,
     pointerEvents: 'none',
   },
   captionText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 21, color: colors.text },
