@@ -183,6 +183,7 @@ export function DotBookshelfIcon({ size = 52, color = colors.text, bgColor = col
       <Line x1="19" y1="18" x2="19" y2="22" stroke={accentColor} strokeWidth={1.6} />
       <Circle cx="22" cy="7" r="5" fill={color} />
       <Circle cx="20" cy="5.5" r="1.3" fill={bgColor} opacity={0.5} />
+      <Path d="M20 8.3 Q 22 9.8 24.2 8.1" fill="none" stroke={bgColor} strokeWidth={0.9} opacity={0.6} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -190,12 +191,14 @@ export function DotBookshelfIcon({ size = 52, color = colors.text, bgColor = col
 /** EXPLANATION: a dot as the handle-end of a magnifying glass. */
 export function DotMagnifierIcon({ size = 52, color = colors.text, bgColor = colors.bg }: IconProps) {
   return (
+    // Ring shifted down 3pt from the original — at cy=9 its stroke reached y=-1.5, clipped by this viewBox.
     <Svg width={size} height={size} viewBox="0 0 52 52">
       <Circle cx="11" cy="33" r="9" fill={color} />
       <Circle cx="8" cy="30" r="1.8" fill={bgColor} opacity={0.5} />
-      <Line x1="17" y1="27" x2="30" y2="14" stroke={color} strokeWidth={3.5} strokeLinecap="round" />
-      <Circle cx="37" cy="9" r="9" fill="none" stroke={color} strokeWidth={3} />
-      <Path d="M32 5 A 6 6 0 0 1 40 4" fill="none" stroke={color} strokeWidth={1.4} opacity={0.45} strokeLinecap="round" />
+      <Path d="M11 35 Q 14 38.5 18 34.5" fill="none" stroke={bgColor} strokeWidth={1.2} opacity={0.6} strokeLinecap="round" />
+      <Line x1="17" y1="27" x2="30" y2="17" stroke={color} strokeWidth={3.5} strokeLinecap="round" />
+      <Circle cx="37" cy="12" r="9" fill="none" stroke={color} strokeWidth={3} />
+      <Path d="M32 8 A 6 6 0 0 1 40 7" fill="none" stroke={color} strokeWidth={1.4} opacity={0.45} strokeLinecap="round" />
     </Svg>
   );
 }
@@ -219,6 +222,7 @@ export function DotSparklesIcon({ size = 52, color = colors.text, bgColor = colo
     <Svg width={size} height={h} viewBox="0 0 52 48">
       <Circle cx="14" cy="28" r="9" fill={color} />
       <Circle cx="11" cy="25" r="1.8" fill={bgColor} opacity={0.5} />
+      <Path d="M11 30 Q 14 33.5 18 29.5" fill="none" stroke={bgColor} strokeWidth={1.2} opacity={0.6} strokeLinecap="round" />
       <Path d="M35 6l2 5.6L43 14l-6 2.4L35 22l-2-5.6L27 14l6-2.4L35 6z" fill={accentColor} />
       <Path d="M45 24l1 3L49 28l-3 1-1 3-1-3-3-1 3-1z" fill={accentColor} />
       <Path d="M27 32l0.8 2.3L30 35l-2.2 0.8L27 38l-0.8-2.2L24 35l2.2-0.7z" fill={accentColor} />
@@ -233,6 +237,7 @@ export function DotRewriteHero({ size = 120, color = colors.text, bgColor = colo
     <Svg width={size} height={h} viewBox="0 0 120 64">
       <Circle cx="26" cy="38" r="14" fill={color} />
       <Circle cx="20" cy="32" r="2.6" fill={bgColor} opacity={0.5} />
+      <Path d="M18 43 Q 26 50 34 42" fill="none" stroke={bgColor} strokeWidth={1.6} opacity={0.6} strokeLinecap="round" />
       <Path d="M56 12 Q 74 8 92 16" fill="none" stroke={colors.divider} strokeWidth={3} strokeLinecap="round" />
       <Path d="M56 34 Q 76 28 96 34" fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" />
       <Path d="M58 3l1.6 4.4L64 9l-4.4 1.6L58 15l-1.6-4.4L52 9l4.4-1.6L58 3z" fill={accentColor} />
@@ -248,6 +253,7 @@ export function DotMagnifierHero({ size = 96, color = colors.text, bgColor = col
     <Svg width={size} height={h} viewBox="0 0 96 88">
       <Circle cx="22" cy="66" r="14" fill={color} />
       <Circle cx="16" cy="60" r="2.6" fill={bgColor} opacity={0.5} />
+      <Path d="M14 71 Q 22 78 30 70" fill="none" stroke={bgColor} strokeWidth={1.6} opacity={0.6} strokeLinecap="round" />
       <Line x1="32" y1="56" x2="56" y2="32" stroke={color} strokeWidth={5} strokeLinecap="round" />
       <Circle cx="68" cy="20" r="16" fill="none" stroke={color} strokeWidth={4} />
       <Path d="M60 12 A 11 11 0 0 1 74 10" fill="none" stroke={color} strokeWidth={2} opacity={0.4} strokeLinecap="round" />
@@ -267,6 +273,7 @@ export function BookshelfEmptyIcon({ size = 84, color = colors.text, bgColor = c
       <Rect x="53" y="24" width="8" height="22" rx="1" fill="none" stroke={dividerColor} strokeWidth={1.6} />
       <Circle cx="31" cy="9" r="6" fill={color} />
       <Circle cx="28.5" cy="7" r="1.4" fill={bgColor} opacity={0.5} />
+      <Path d="M28 11 Q 31 14.5 34.5 10.5" fill="none" stroke={bgColor} strokeWidth={1} opacity={0.6} strokeLinecap="round" />
     </Svg>
   );
 }
