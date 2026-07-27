@@ -223,6 +223,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     lineHeight: 24,
     color: colors.text,
+    textAlignVertical: 'top',
     outlineWidth: 0,
   },
   photoDoneBtn: { position: 'absolute', bottom: 12, right: 12 },

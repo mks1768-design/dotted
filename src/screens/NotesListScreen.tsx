@@ -1,15 +1,19 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { NoteBoard } from '../components/NoteBoard';
 import { Card, Hr, Tag } from '../components/ui';
 import { noteKinds } from '../config/noteKinds';
-import { BookIcon, BookshelfEmptyIcon, ChevronLeftIcon, PlusIcon } from '../icons';
+import { BoardIcon, BookIcon, BookshelfEmptyIcon, ChevronLeftIcon, ListIcon, PlusIcon, ShareIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { Note } from '../state/types';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
+type ViewMode = 'list' | 'board';
+
 export function NotesListScreen() {
-  const { state, backToHome, openNote, newNote } = useNotes();
+  const { state, backToHome, openNote, newNote, shareNote } = useNotes();
+  const [viewMode, setViewMode] = useState<ViewMode>('list');
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -21,6 +25,27 @@ export function NotesListScreen() {
           <BookIcon size={16} />
         </View>
         <Text style={styles.title}>dotted</Text>
+
+        <View style={styles.viewToggle}>
+          <Pressable
+            onPress={() => setViewMode('list')}
+            style={[styles.viewToggleBtn, viewMode === 'list' && styles.viewToggleBtnActive]}
+            accessibilityRole="button"
+            accessibilityLabel="List view"
+            accessibilityState={{ selected: viewMode === 'list' }}
+          >
+            <ListIcon size={15} color={viewMode === 'list' ? colors.bg : colors.neutral700} />
+          </Pressable>
+          <Pressable
+            onPress={() => setViewMode('board')}
+            style={[styles.viewToggleBtn, viewMode === 'board' && styles.viewToggleBtnActive]}
+            accessibilityRole="button"
+            accessibilityLabel="Board view"
+            accessibilityState={{ selected: viewMode === 'board' }}
+          >
+            <BoardIcon size={15} color={viewMode === 'board' ? colors.bg : colors.neutral700} />
+          </Pressable>
+        </View>
       </View>
       <Hr style={styles.hrMargin} />
 
@@ -29,6 +54,8 @@ export function NotesListScreen() {
           <BookshelfEmptyIcon size={84} />
           <Text style={styles.emptyText}>No notes yet — tap + to write your first one.</Text>
         </View>
+      ) : viewMode === 'board' ? (
+        <NoteBoard notes={state.notes} onOpen={openNote} onShare={shareNote} />
       ) : (
         <FlatList
           data={state.notes}
@@ -38,7 +65,21 @@ export function NotesListScreen() {
             <Card onPress={() => openNote(item)} style={styles.card}>
               <View style={styles.cardTop}>
                 <Text style={styles.kicker}>{item.date}</Text>
-                <Tag label={noteKinds[item.kind].label} variant="outline" />
+                <View style={styles.cardTopRight}>
+                  <Tag label={noteKinds[item.kind].label} variant="outline" />
+                  <Pressable
+                    onPress={(e) => {
+                      e?.stopPropagation?.();
+                      shareNote(item);
+                    }}
+                    style={styles.cardShareBtn}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Share "${item.title}"`}
+                    hitSlop={8}
+                  >
+                    <ShareIcon size={14} />
+                  </Pressable>
+                </View>
               </View>
               <Text style={styles.cardTitle} numberOfLines={1}>
                 {item.title}
@@ -92,11 +133,23 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  title: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
+  title: { flex: 1, fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
+  viewToggle: {
+    flexDirection: 'row',
+    borderWidth: 1,
+    borderColor: colors.divider,
+    borderRadius: radii.pill,
+    padding: 2,
+    gap: 2,
+  },
+  viewToggleBtn: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  viewToggleBtnActive: { backgroundColor: colors.text },
   hrMargin: { marginHorizontal: 20 },
   list: { padding: 20, paddingBottom: 90, gap: 12 },
   card: { gap: 6 },
   cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  cardTopRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  cardShareBtn: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, letterSpacing: 0.04 },
   cardTitle: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
   cardSnippet: { fontFamily: fonts.body, fontSize: fontSizes.cardSnippet, color: colors.neutral700 },

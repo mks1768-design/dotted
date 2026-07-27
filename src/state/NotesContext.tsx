@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
 import * as ImagePicker from 'expo-image-picker';
 import React, { createContext, useCallback, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
+import { Share } from 'react-native';
 import { NoteKind } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
 import { AnthropicError, explainScan, rewriteNote } from '../services/anthropic';
@@ -43,6 +44,7 @@ type Ctx = {
   insertScan: () => void;
   setApiKey: (key: string) => Promise<void>;
   clearApiKey: () => Promise<void>;
+  shareNote: (note: Note) => Promise<void>;
 };
 
 const NotesContext = createContext<Ctx | null>(null);
@@ -185,6 +187,15 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const shareNote = useCallback(async (note: Note) => {
+    const message = note.body?.trim() ? `${note.title}\n\n${note.body}` : note.title;
+    try {
+      await Share.share({ title: note.title, message });
+    } catch {
+      // Sharing unsupported on this platform/browser, or the user dismissed the sheet — nothing to do.
+    }
+  }, []);
+
   const value = useMemo<Ctx>(
     () => ({
       state,
@@ -214,8 +225,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       insertScan: () => dispatch({ type: 'INSERT_SCAN' }),
       setApiKey,
       clearApiKey,
+      shareNote,
     }),
-    [state, skipSplash, switchKind, pickPhoto, applyRewrite, capturePage, copyScan, setApiKey, clearApiKey]
+    [state, skipSplash, switchKind, pickPhoto, applyRewrite, capturePage, copyScan, setApiKey, clearApiKey, shareNote]
   );
 
   return <NotesContext.Provider value={value}>{children}</NotesContext.Provider>;

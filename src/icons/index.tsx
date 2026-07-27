@@ -41,6 +41,42 @@ export function SettingsIcon({ size = 18, color = colors.text }: IconProps) {
   );
 }
 
+export function ShareIcon({ size = 16, color = colors.text }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Circle cx="18" cy="5" r="3" />
+      <Circle cx="6" cy="12" r="3" />
+      <Circle cx="18" cy="19" r="3" />
+      <Line x1="8.6" y1="10.5" x2="15.4" y2="6.5" />
+      <Line x1="8.6" y1="13.5" x2="15.4" y2="17.5" />
+    </Svg>
+  );
+}
+
+export function BoardIcon({ size = 16, color = colors.text }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Rect x="3" y="3" width="7" height="11" rx="1.5" />
+      <Rect x="14" y="3" width="7" height="7" rx="1.5" />
+      <Rect x="14" y="14" width="7" height="7" rx="1.5" />
+      <Rect x="3" y="18" width="7" height="3" rx="1.5" />
+    </Svg>
+  );
+}
+
+export function ListIcon({ size = 16, color = colors.text }: IconProps) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <Line x1="8" y1="6" x2="21" y2="6" />
+      <Line x1="8" y1="12" x2="21" y2="12" />
+      <Line x1="8" y1="18" x2="21" y2="18" />
+      <Line x1="3" y1="6" x2="3.01" y2="6" />
+      <Line x1="3" y1="12" x2="3.01" y2="12" />
+      <Line x1="3" y1="18" x2="3.01" y2="18" />
+    </Svg>
+  );
+}
+
 export function ChevronRightIcon({ size = 16, color = colors.neutral700 }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
