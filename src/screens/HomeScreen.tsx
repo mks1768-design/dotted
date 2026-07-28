@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
 import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
-import { LibraryScene } from '../illustrations';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
@@ -56,9 +55,7 @@ export function HomeScreen() {
         })}
       </View>
 
-      <View style={styles.footer}>
-        <LibraryScene height={240} />
-      </View>
+      <View style={styles.footer} />
     </SafeAreaView>
   );
 }
@@ -95,5 +92,5 @@ const styles = StyleSheet.create({
   rowPressed: { backgroundColor: colors.accent100, transform: [{ scale: 0.98 }] },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   rowLabel: { fontFamily: fonts.heading, fontSize: fontSizes.homeRowLabel, color: colors.text },
-  footer: { flex: 1, justifyContent: 'flex-end', overflow: 'hidden' },
+  footer: { flex: 1 },
 });

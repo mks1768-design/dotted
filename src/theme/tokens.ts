@@ -20,20 +20,6 @@ export const colors = {
   danger: '#a13b2b',
 };
 
-// Scene palette for the flat library illustrations. Kept apart from `colors`
-// because it's illustration-only — no UI chrome should reach for these.
-export const library = {
-  wall: '#f1e6d3',
-  shelfFrame: '#6b4726',
-  shelfBack: '#8a5a34',
-  shelfBoard: '#7a4d2c',
-  rug: '#c9714a',
-  rugAccent: '#a85736',
-  plantPot: '#b6683f',
-  plantLeaf: '#5f8f5c',
-  books: ['#b68235', '#7a8f6b', '#8a5a6b', '#4f6b8a', '#c9a05a', '#9a5b45'],
-};
-
 export const fonts = {
   heading: 'CormorantGaramond_600SemiBold',
   headingWeight: '600' as const,
