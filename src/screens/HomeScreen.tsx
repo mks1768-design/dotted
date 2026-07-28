@@ -36,47 +36,47 @@ export function HomeScreen() {
         </View>
       </View>
 
-      <Card
-        onPress={questDoneToday ? undefined : () => startQuest(todaysPrompt)}
-        style={[styles.questCard, questDoneToday && styles.questCardDone] as any}
-      >
-        <View style={styles.questTop}>
-          <Text style={styles.questKicker}>TODAY'S PROMPT</Text>
-          {questDoneToday && (
-            <View style={styles.questDoneBadge}>
-              <CheckIcon size={12} color={colors.accent700} />
-              <Text style={styles.questDoneText}>Done</Text>
-            </View>
-          )}
-        </View>
-        <Text style={styles.questPrompt}>{todaysPrompt}</Text>
-        {!questDoneToday && <Text style={styles.questCta}>Write about this →</Text>}
-      </Card>
-
-      <View style={styles.rows}>
-        {homeMenu.map((item) => {
-          const Icon = item.icon;
-          return (
-            <Pressable
-              key={item.id}
-              onPress={actionFor(item)}
-              style={({ pressed, hovered }: any) => [
-                styles.row,
-                hovered && styles.rowHovered,
-                pressed && styles.rowPressed,
-              ]}
-            >
-              <View style={styles.rowLeft}>
-                <Icon size={48} />
-                <Text style={styles.rowLabel}>{item.label}</Text>
+      <View style={styles.content}>
+        <Card
+          onPress={questDoneToday ? undefined : () => startQuest(todaysPrompt)}
+          style={[styles.questCard, questDoneToday && styles.questCardDone] as any}
+        >
+          <View style={styles.questTop}>
+            <Text style={styles.questKicker}>TODAY'S PROMPT</Text>
+            {questDoneToday && (
+              <View style={styles.questDoneBadge}>
+                <CheckIcon size={12} color={colors.accent700} />
+                <Text style={styles.questDoneText}>Done</Text>
               </View>
-              <ChevronRightIcon />
-            </Pressable>
-          );
-        })}
-      </View>
+            )}
+          </View>
+          <Text style={styles.questPrompt}>{todaysPrompt}</Text>
+          {!questDoneToday && <Text style={styles.questCta}>Write about this →</Text>}
+        </Card>
 
-      <View style={styles.footer} />
+        <View style={styles.rows}>
+          {homeMenu.map((item) => {
+            const Icon = item.icon;
+            return (
+              <Pressable
+                key={item.id}
+                onPress={actionFor(item)}
+                style={({ pressed, hovered }: any) => [
+                  styles.row,
+                  hovered && styles.rowHovered,
+                  pressed && styles.rowPressed,
+                ]}
+              >
+                <View style={styles.rowLeft}>
+                  <Icon size={48} />
+                  <Text style={styles.rowLabel}>{item.label}</Text>
+                </View>
+                <ChevronRightIcon />
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
     </SafeAreaView>
   );
 }
@@ -95,6 +95,7 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   settingsBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
+  content: { flex: 1, justifyContent: 'center' },
   questCard: { marginHorizontal: 20, marginTop: 6 },
   questCardDone: { opacity: 0.7 },
   questTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
@@ -121,5 +122,4 @@ const styles = StyleSheet.create({
   rowPressed: { backgroundColor: colors.accent100, transform: [{ scale: 0.98 }] },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   rowLabel: { fontFamily: fonts.heading, fontSize: fontSizes.homeRowLabel, color: colors.text },
-  footer: { flex: 1 },
 });
