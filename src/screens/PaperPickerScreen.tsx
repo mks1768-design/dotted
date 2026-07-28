@@ -4,15 +4,15 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from '../components/ui';
 import { RuledPaper } from '../components/RuledPaper';
 import { paperStyles } from '../config/paperStyles';
-import { ChevronLeftIcon, PhotoIcon } from '../icons';
+import { ChevronLeftIcon, LockIcon, PhotoIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii } from '../theme/tokens';
 
 const SAMPLE_BODY =
   "This is what your writing looks like on this paper. Pick whatever feels right — you can always change it later.";
 
 export function PaperPickerScreen() {
-  const { state, backToEditor, selectPaperStyle } = useNotes();
+  const { state, backToEditor, selectPaperStyle, goPaywall } = useNotes();
   const [page, setPage] = useState(0);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const scrollRef = useRef<ScrollView>(null);
@@ -38,6 +38,14 @@ export function PaperPickerScreen() {
   const current = paperStyles[page];
   const title = state.draftTitle.trim() || 'Untitled';
   const body = state.draftBody.trim() || SAMPLE_BODY;
+  const isLocked = (id: (typeof paperStyles)[number]['id']) => {
+    const p = paperStyles.find((s) => s.id === id);
+    return !!p?.pro && !state.isPro;
+  };
+  const choose = (id: (typeof paperStyles)[number]['id']) => {
+    if (isLocked(id)) goPaywall('paperPicker');
+    else selectPaperStyle(id);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
@@ -60,7 +68,7 @@ export function PaperPickerScreen() {
         style={styles.pager}
       >
         {paperStyles.map((p) => (
-          <Pressable key={p.id} style={[styles.page, { width, height }]} onPress={() => selectPaperStyle(p.id)}>
+          <Pressable key={p.id} style={[styles.page, { width, height }]} onPress={() => choose(p.id)}>
             {p.isPhoto ? (
               <View style={[StyleSheet.absoluteFill, styles.photoPreview]}>
                 <PhotoIcon size={32} color={colors.neutral700} />
@@ -77,6 +85,12 @@ export function PaperPickerScreen() {
                 </Text>
               </View>
             )}
+            {p.pro && !state.isPro && (
+              <View style={styles.lockBadge}>
+                <LockIcon size={12} color={colors.bg} />
+                <Text style={styles.lockBadgeText}>Pro</Text>
+              </View>
+            )}
           </Pressable>
         ))}
       </ScrollView>
@@ -90,7 +104,11 @@ export function PaperPickerScreen() {
           ))}
         </View>
         <Text style={styles.label}>{current.label}</Text>
-        <Button title="Use this paper" onPress={() => selectPaperStyle(current.id)} block />
+        <Button
+          title={isLocked(current.id) ? 'Unlock with dotted Pro' : 'Use this paper'}
+          onPress={() => choose(current.id)}
+          block
+        />
       </View>
     </SafeAreaView>
   );
@@ -115,6 +133,19 @@ const styles = StyleSheet.create({
   previewBody: { fontFamily: fonts.body, fontSize: fontSizes.body, lineHeight: 26, color: colors.text },
   photoPreview: { alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.neutral200 },
   photoPreviewText: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, textAlign: 'center', paddingHorizontal: 40 },
+  lockBadge: {
+    position: 'absolute',
+    top: 16,
+    right: 16,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: radii.pill,
+    backgroundColor: colors.text,
+  },
+  lockBadgeText: { fontFamily: fonts.body, fontSize: 11, color: colors.bg, letterSpacing: 0.3 },
   footer: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8, gap: 14, alignItems: 'center' },
   dots: { flexDirection: 'row', gap: 8 },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.divider },

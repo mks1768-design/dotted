@@ -32,6 +32,8 @@ export const initialState: AppState = {
   apiKey: null,
   aiError: null,
   aiQuality: 'standard',
+  isPro: false,
+  paywallReturnTo: 'home',
 };
 
 const blankDraft = {
@@ -52,6 +54,10 @@ export type Action =
   | { type: 'SET_API_KEY'; apiKey: string | null }
   | { type: 'HYDRATE_AI_QUALITY'; value: AiQuality }
   | { type: 'SET_AI_QUALITY'; value: AiQuality }
+  | { type: 'HYDRATE_PRO'; value: boolean }
+  | { type: 'UNLOCK_PRO' }
+  | { type: 'GO_PAYWALL'; from: ScreenName }
+  | { type: 'CLOSE_PAYWALL' }
   | { type: 'HYDRATE_ONBOARDED'; value: boolean }
   | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'SKIP_SPLASH' }
@@ -105,6 +111,18 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_AI_QUALITY':
       return { ...state, aiQuality: action.value };
+
+    case 'HYDRATE_PRO':
+      return { ...state, isPro: action.value };
+
+    case 'UNLOCK_PRO':
+      return { ...state, isPro: true, screen: state.paywallReturnTo };
+
+    case 'GO_PAYWALL':
+      return { ...state, screen: 'paywall', paywallReturnTo: action.from };
+
+    case 'CLOSE_PAYWALL':
+      return { ...state, screen: state.paywallReturnTo };
 
     case 'HYDRATE_ONBOARDED':
       return { ...state, hasOnboarded: action.value };

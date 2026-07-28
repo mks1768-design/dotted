@@ -13,6 +13,7 @@ export type PaperStyleConfig = {
   swatchColor: string;
   isPhoto?: boolean;
   decoration?: PaperDecoration;
+  pro?: boolean;
 };
 
 export const paperStyles: PaperStyleConfig[] = [
@@ -20,8 +21,8 @@ export const paperStyles: PaperStyleConfig[] = [
   { id: 'accent', label: 'Warm', swatchColor: colors.accent100 },
   { id: 'neutral', label: 'Stone', swatchColor: colors.neutral200 },
   { id: 'cream', label: 'Cream', swatchColor: colors.neutral100 },
-  { id: 'dotQuiet', label: 'Quiet dot', swatchColor: colors.bg, decoration: 'dot' },
-  { id: 'dotScatter', label: 'Scattered dots', swatchColor: colors.bg, decoration: 'scatter' },
+  { id: 'dotQuiet', label: 'Quiet dot', swatchColor: colors.bg, decoration: 'dot', pro: true },
+  { id: 'dotScatter', label: 'Scattered dots', swatchColor: colors.bg, decoration: 'scatter', pro: true },
   { id: 'photo', label: 'Photo', swatchColor: colors.neutral200, isPhoto: true },
 ];
 

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Hr, SegmentedControl } from '../components/ui';
-import { ChevronLeftIcon } from '../icons';
+import { Button, Hr, SegmentedControl, Tag } from '../components/ui';
+import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
 export function SettingsScreen() {
-  const { state, backToHome, setApiKey, clearApiKey, setAiQuality, exportNotes, importNotes } = useNotes();
+  const { state, backToHome, setApiKey, clearApiKey, setAiQuality, goPaywall, exportNotes, importNotes } = useNotes();
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const hasKey = !!state.apiKey;
@@ -64,6 +64,16 @@ export function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
+        <Pressable style={styles.proRow} onPress={() => goPaywall('settings')} accessibilityRole="button" accessibilityLabel="dotted Pro">
+          <View>
+            <Text style={styles.proTitle}>dotted Pro</Text>
+            <Text style={styles.proSubtitle}>{state.isPro ? 'Unlocked' : 'Character paper styles, and more to come'}</Text>
+          </View>
+          {state.isPro ? <Tag label="Pro" variant="accent" /> : <ChevronRightIcon />}
+        </Pressable>
+
+        <Hr style={{ marginVertical: 4 }} />
+
         <View>
           <Text style={styles.kicker}>Anthropic API key</Text>
           <Text style={styles.status}>{hasKey ? 'Connected — Improve and Scan use real AI.' : 'Not set — Improve and Scan use placeholder text.'}</Text>
@@ -147,6 +157,19 @@ const styles = StyleSheet.create({
   backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
   scroll: { paddingHorizontal: 20, paddingBottom: 24, gap: 14 },
+  proRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: 16,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    borderColor: colors.divider,
+    backgroundColor: colors.surface,
+    ...shadows.sm,
+  },
+  proTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text },
+  proSubtitle: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, marginTop: 2 },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, marginBottom: 6 },
   status: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
   input: {
