@@ -44,6 +44,4 @@ export type AppState = {
   apiKey: string | null;
   aiError: string | null;
   aiQuality: AiQuality;
-  isPro: boolean;
-  paywallReturnTo: ScreenName;
 };

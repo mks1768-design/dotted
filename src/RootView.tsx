@@ -8,7 +8,6 @@ import { ImproveScreen } from './screens/ImproveScreen';
 import { NotesListScreen } from './screens/NotesListScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
 import { PaperPickerScreen } from './screens/PaperPickerScreen';
-import { PaywallScreen } from './screens/PaywallScreen';
 import { ScanScreen } from './screens/ScanScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SplashScreen } from './screens/SplashScreen';
@@ -49,8 +48,6 @@ export function RootView() {
         return <BackupScreen />;
       case 'paperPicker':
         return <PaperPickerScreen />;
-      case 'paywall':
-        return <PaywallScreen />;
       default:
         return <HomeScreen />;
     }

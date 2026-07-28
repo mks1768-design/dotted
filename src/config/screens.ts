@@ -9,5 +9,4 @@ export type ScreenName =
   | 'settings'
   | 'settingsAi'
   | 'settingsBackup'
-  | 'paperPicker'
-  | 'paywall';
+  | 'paperPicker';

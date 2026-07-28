@@ -1,32 +1,23 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Tag } from '../components/ui';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes } from '../theme/tokens';
 
 const rows = [
-  { id: 'pro', title: 'dotted Pro' },
   { id: 'ai', title: 'AI' },
   { id: 'backup', title: 'Backup' },
 ] as const;
 
 export function SettingsScreen() {
-  const { state, backToHome, goSettingsAi, goSettingsBackup, goPaywall } = useNotes();
+  const { state, backToHome, goSettingsAi, goSettingsBackup } = useNotes();
   const hasKey = !!state.apiKey;
 
-  const subtitleFor = (id: (typeof rows)[number]['id']) => {
-    if (id === 'pro') return state.isPro ? 'Unlocked' : 'Character paper styles, and more to come';
-    if (id === 'ai') return hasKey ? 'Connected' : 'Add an API key to use Improve and Scan';
-    return 'Export or import your notes';
-  };
+  const subtitleFor = (id: (typeof rows)[number]['id']) =>
+    id === 'ai' ? (hasKey ? 'Connected' : 'Add an API key to use Improve and Scan') : 'Export or import your notes';
 
-  const actionFor = (id: (typeof rows)[number]['id']) => {
-    if (id === 'pro') return () => goPaywall('settings');
-    if (id === 'ai') return goSettingsAi;
-    return goSettingsBackup;
-  };
+  const actionFor = (id: (typeof rows)[number]['id']) => (id === 'ai' ? goSettingsAi : goSettingsBackup);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -55,7 +46,7 @@ export function SettingsScreen() {
                 <Text style={styles.rowLabel}>{item.title}</Text>
                 <Text style={styles.rowSubtitle}>{subtitleFor(item.id)}</Text>
               </View>
-              {item.id === 'pro' && state.isPro ? <Tag label="Pro" variant="accent" /> : <ChevronRightIcon />}
+              <ChevronRightIcon />
             </Pressable>
           </React.Fragment>
         ))}

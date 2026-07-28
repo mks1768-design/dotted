@@ -5,10 +5,8 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { Share } from 'react-native';
 import { NoteKind } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
-import { ScreenName } from '../config/screens';
 import { AnthropicError, explainScan, rewriteNote } from '../services/anthropic';
 import { exportBackup, importBackup } from '../services/backup';
-import { PurchaseResult, purchasePro } from '../services/purchases';
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secureStorage';
 import { generateId } from './id';
 import { initialState, reducer } from './reducer';
@@ -19,7 +17,6 @@ const STORAGE_KEY = '@dotted/notes';
 const API_KEY_STORAGE_KEY = 'dotted.anthropicApiKey';
 const ONBOARDED_STORAGE_KEY = '@dotted/hasOnboarded';
 const AI_QUALITY_STORAGE_KEY = '@dotted/aiQuality';
-const PRO_STORAGE_KEY = '@dotted/isPro';
 const COPY_RESET_MS = 1500;
 const SPLASH_MS = 1600;
 
@@ -42,9 +39,6 @@ type Ctx = {
   switchScan: () => void;
   goPaperPicker: () => void;
   selectPaperStyle: (color: PaperStyleId) => void;
-  goPaywall: (from: ScreenName) => void;
-  closePaywall: () => void;
-  buyPro: () => Promise<PurchaseResult>;
   pickPhoto: () => Promise<void>;
   removePhoto: () => void;
   startEditingPhoto: () => void;
@@ -145,19 +139,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Hydrate the Pro entitlement (set locally once a real purchase completes).
-  useEffect(() => {
-    let cancelled = false;
-    AsyncStorage.getItem(PRO_STORAGE_KEY)
-      .then((value) => {
-        if (!cancelled) dispatch({ type: 'HYDRATE_PRO', value: value === '1' });
-      })
-      .catch(() => {});
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   // Persist notes whenever they change (after initial hydration).
   useEffect(() => {
     if (!state.hydrated) return;
@@ -207,15 +188,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const setAiQuality = useCallback((value: AiQuality) => {
     AsyncStorage.setItem(AI_QUALITY_STORAGE_KEY, value).catch(() => {});
     dispatch({ type: 'SET_AI_QUALITY', value });
-  }, []);
-
-  const buyPro = useCallback(async () => {
-    const result = await purchasePro();
-    if (result.ok) {
-      AsyncStorage.setItem(PRO_STORAGE_KEY, '1').catch(() => {});
-      dispatch({ type: 'UNLOCK_PRO' });
-    }
-    return result;
   }, []);
 
   const pickPhoto = useCallback(async () => {
@@ -356,9 +328,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       switchScan: () => switchKind('scan'),
       goPaperPicker: () => dispatch({ type: 'GO_PAPER_PICKER' }),
       selectPaperStyle: (color) => dispatch({ type: 'SELECT_PAPER_STYLE', color }),
-      goPaywall: (from) => dispatch({ type: 'GO_PAYWALL', from }),
-      closePaywall: () => dispatch({ type: 'CLOSE_PAYWALL' }),
-      buyPro,
       pickPhoto,
       removePhoto: () => dispatch({ type: 'REMOVE_PHOTO' }),
       startEditingPhoto: () => dispatch({ type: 'START_EDITING_PHOTO' }),
@@ -392,7 +361,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       setApiKey,
       clearApiKey,
       setAiQuality,
-      buyPro,
       shareNote,
       deleteNote,
       exportNotes,
