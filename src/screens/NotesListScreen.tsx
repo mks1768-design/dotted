@@ -9,7 +9,7 @@ import { BoardIcon, BookIcon, BookshelfEmptyIcon, ChevronLeftIcon, ListIcon, Plu
 import { formatNoteDate } from '../state/formatDate';
 import { useNotes } from '../state/NotesContext';
 import { Note } from '../state/types';
-import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 type ViewMode = 'list' | 'board';
 
@@ -83,7 +83,6 @@ export function NotesListScreen() {
                     style={styles.cardIconBtn}
                     accessibilityRole="button"
                     accessibilityLabel={`Share "${item.title}"`}
-                    hitSlop={8}
                   >
                     <ShareIcon size={14} />
                   </Pressable>
@@ -95,7 +94,6 @@ export function NotesListScreen() {
                     style={styles.cardIconBtn}
                     accessibilityRole="button"
                     accessibilityLabel={`Delete "${item.title}"`}
-                    hitSlop={8}
                   >
                     <TrashIcon size={14} />
                   </Pressable>
@@ -147,9 +145,9 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   backBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: spacing.tapTarget,
+    height: spacing.tapTarget,
+    borderRadius: spacing.tapTarget / 2,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -165,19 +163,30 @@ const styles = StyleSheet.create({
   viewToggle: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: colors.divider,
+    borderColor: colors.border,
     borderRadius: radii.pill,
     padding: 2,
     gap: 2,
   },
-  viewToggleBtn: { width: 28, height: 28, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  // Full 44pt per segment rather than a smaller box grown with hitSlop —
+  // adjacent segments would overlap each other's slop.
+  viewToggleBtn: {
+    width: spacing.tapTarget,
+    height: spacing.tapTarget,
+    borderRadius: spacing.tapTarget / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   viewToggleBtnActive: { backgroundColor: colors.accent700 },
   hrMargin: { marginHorizontal: 20 },
   list: { padding: 20, paddingBottom: 90, gap: 12 },
   card: { gap: 6 },
   cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   cardTopRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  cardIconBtn: { width: 24, height: 24, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },
+  // 36pt rather than the full 44: these sit side by side, so the boxes have to
+  // stay narrow enough not to overlap each other at this gap. Comfortably over
+  // the 24pt WCAG 2.5.8 floor, and the whole card is tappable to open the note.
+  cardIconBtn: { width: 36, height: 36, borderRadius: 18, alignItems: 'center', justifyContent: 'center' },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, letterSpacing: 0.04 },
   cardTitle: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
   cardSnippet: { fontFamily: fonts.body, fontSize: fontSizes.cardSnippet, color: colors.neutral700 },

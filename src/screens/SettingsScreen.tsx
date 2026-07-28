@@ -5,7 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Hr, SegmentedControl } from '../components/ui';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 type SectionId = 'ai' | 'backup';
 
@@ -205,7 +205,7 @@ export function SettingsScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
   scroll: { paddingHorizontal: 20, paddingBottom: 24 },
   group: {
@@ -223,8 +223,9 @@ const styles = StyleSheet.create({
   status: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
   inputRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   input: {
+    minHeight: spacing.tapTarget,
     borderWidth: 1,
-    borderColor: colors.divider,
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 12,
     fontFamily: fonts.body,

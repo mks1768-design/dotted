@@ -85,7 +85,14 @@ export function PaperPickerScreen() {
       <View style={styles.footer}>
         <View style={styles.dots}>
           {paperStyles.map((p, i) => (
-            <Pressable key={p.id} onPress={() => goToPage(i)} hitSlop={8}>
+            <Pressable
+              key={p.id}
+              onPress={() => goToPage(i)}
+              style={styles.dotHit}
+              accessibilityRole="button"
+              accessibilityLabel={`Show ${p.label} paper`}
+              accessibilityState={{ selected: i === page }}
+            >
               <View style={[styles.dot, i === page && styles.dotActive]} />
             </Pressable>
           ))}
@@ -107,7 +114,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   headerTitle: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
   pager: { flex: 1 },
   page: { overflow: 'hidden' },
@@ -117,8 +124,11 @@ const styles = StyleSheet.create({
   photoPreview: { alignItems: 'center', justifyContent: 'center', gap: 10, backgroundColor: colors.neutral200 },
   photoPreviewText: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, textAlign: 'center', paddingHorizontal: 40 },
   footer: { paddingHorizontal: 24, paddingBottom: 16, paddingTop: 8, gap: 14, alignItems: 'center' },
-  dots: { flexDirection: 'row', gap: 8 },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.divider },
+  dots: { flexDirection: 'row' },
+  // The dot stays 6pt; the padding around it is what makes the target tappable,
+  // and it doubles as the visual spacing that `gap` used to provide.
+  dotHit: { paddingVertical: 19, paddingHorizontal: 9, alignItems: 'center', justifyContent: 'center' },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: colors.border },
   dotActive: { backgroundColor: colors.text, width: 18 },
   label: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700 },
 });

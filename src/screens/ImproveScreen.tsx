@@ -111,14 +111,14 @@ export function ImproveScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: colors.bg },
   header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
-  backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
   scroll: { paddingHorizontal: 20, paddingBottom: 24, gap: 16 },
   hero: { alignItems: 'center', paddingVertical: 6 },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, marginBottom: 6 },
   promptInput: {
     borderWidth: 1,
-    borderColor: colors.divider,
+    borderColor: colors.border,
     borderRadius: 12,
     padding: 12,
     minHeight: 64,

@@ -95,7 +95,6 @@ function Pin({
           style={[styles.pinActionBtn, isPhoto && styles.pinActionBtnOnPhoto]}
           accessibilityRole="button"
           accessibilityLabel={`Share "${note.title}"`}
-          hitSlop={8}
         >
           <ShareIcon size={13} color={isPhoto ? '#fff' : colors.text} />
         </Pressable>
@@ -107,7 +106,6 @@ function Pin({
           style={[styles.pinActionBtn, isPhoto && styles.pinActionBtnOnPhoto]}
           accessibilityRole="button"
           accessibilityLabel={`Delete "${note.title}"`}
-          hitSlop={8}
         >
           <TrashIcon size={13} color={isPhoto ? '#fff' : colors.text} />
         </Pressable>
@@ -180,10 +178,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
   },
+  // 32pt, not the full 44: these sit side by side over a compact pin, so the
+  // boxes must stay clear of each other. Over the 24pt WCAG 2.5.8 floor, and
+  // the pin itself opens the note.
   pinActionBtn: {
-    width: 26,
-    height: 26,
-    borderRadius: 13,
+    width: 32,
+    height: 32,
+    borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: 'rgba(243,242,242,0.85)',

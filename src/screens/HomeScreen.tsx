@@ -5,7 +5,7 @@ import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
 import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes } from '../theme/tokens';
+import { colors, fonts, fontSizes, spacing } from '../theme/tokens';
 
 export function HomeScreen() {
   const { state, goNotesList, switchWrite, switchImprove, switchScan, goSettings } = useNotes();
@@ -72,7 +72,13 @@ const styles = StyleSheet.create({
   },
   brand: { flexDirection: 'row', alignItems: 'center', gap: 9 },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  settingsBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
+  settingsBtn: {
+    width: spacing.tapTarget,
+    height: spacing.tapTarget,
+    borderRadius: spacing.tapTarget / 2,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
   rows: { flex: 1 },
   hr: { height: StyleSheet.hairlineWidth, backgroundColor: colors.divider },

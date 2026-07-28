@@ -1,6 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
-import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 export function Hr({ style }: { style?: ViewStyle }) {
   return <View style={[styles.hr, style]} />;
@@ -156,6 +156,7 @@ const styles = StyleSheet.create({
     gap: 6,
     paddingHorizontal: 20,
     paddingVertical: 12,
+    minHeight: spacing.tapTarget,
     borderRadius: radii.pill,
   },
   btnPrimary: {
@@ -179,7 +180,7 @@ const styles = StyleSheet.create({
   seg: {
     flexDirection: 'row',
     borderWidth: 1,
-    borderColor: colors.divider,
+    borderColor: colors.border,
     borderRadius: radii.pill,
     padding: 3,
     gap: 2,
@@ -189,6 +190,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     paddingVertical: 7,
+    minHeight: spacing.tapTarget - 8, // + the 3pt container padding on each side
     borderRadius: radii.pill,
   },
   segOptActive: {

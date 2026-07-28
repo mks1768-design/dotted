@@ -9,7 +9,7 @@ import { noteKindOrder, noteKinds } from '../config/noteKinds';
 import { paperDecorationFor, paperStyleFor } from '../config/paperStyles';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon, PhotoIcon, TrashIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes } from '../theme/tokens';
+import { colors, fonts, fontSizes, spacing } from '../theme/tokens';
 
 export function EditorScreen() {
   const {
@@ -90,7 +90,7 @@ export function EditorScreen() {
             ) : (
               <>
                 <Image source={{ uri: state.draftPhotoUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-                <Pressable style={styles.photoClose} onPress={removePhoto} accessibilityLabel="Remove photo">
+                <Pressable style={styles.photoClose} onPress={removePhoto} accessibilityRole="button" accessibilityLabel="Remove photo">
                   <CloseIcon size={15} />
                 </Pressable>
                 {state.notePhotoEditing ? (
@@ -113,7 +113,7 @@ export function EditorScreen() {
                         {state.draftBody.trim() ? state.draftBody : 'Tap the pencil to add words to this note.'}
                       </Text>
                     </LinearGradient>
-                    <Pressable style={styles.photoEditFab} onPress={startEditingPhoto} accessibilityLabel="Edit note text">
+                    <Pressable style={styles.photoEditFab} onPress={startEditingPhoto} accessibilityRole="button" accessibilityLabel="Edit note text">
                       <EditIcon size={16} />
                     </Pressable>
                   </>
@@ -160,11 +160,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
   },
-  backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
-  deleteBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
+  deleteBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1, paddingHorizontal: 20, gap: 8 },
-  paperRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4, alignSelf: 'flex-start' },
+  paperRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    alignSelf: 'flex-start',
+    // Padding rather than margin so the strip itself is a 44pt-tall target;
+    // the negative margin keeps it visually where it was against the title.
+    minHeight: spacing.tapTarget,
+    paddingRight: 8,
+    marginVertical: -8,
+  },
   paperLabel: {
     fontFamily: fonts.body,
     fontSize: fontSizes.smallLabel,
@@ -214,9 +224,9 @@ const styles = StyleSheet.create({
     top: 10,
     right: 10,
     zIndex: 2,
-    width: 30,
-    height: 30,
-    borderRadius: 15,
+    width: spacing.tapTarget,
+    height: spacing.tapTarget,
+    borderRadius: spacing.tapTarget / 2,
     backgroundColor: 'rgba(243,242,242,0.82)',
     alignItems: 'center',
     justifyContent: 'center',
@@ -260,9 +270,9 @@ const styles = StyleSheet.create({
     position: 'absolute',
     bottom: 12,
     right: 12,
-    width: 36,
-    height: 36,
-    borderRadius: 18,
+    width: spacing.tapTarget,
+    height: spacing.tapTarget,
+    borderRadius: spacing.tapTarget / 2,
     backgroundColor: colors.text,
     alignItems: 'center',
     justifyContent: 'center',
