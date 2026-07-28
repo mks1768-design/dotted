@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
 import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
+import { ForestScene } from '../illustrations';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
@@ -56,8 +57,7 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.footer}>
-        <DotMark size={64} color={colors.divider} />
-        <Text style={styles.footerText}>built around one small, recurring mark.</Text>
+        <ForestScene height={240} />
       </View>
     </SafeAreaView>
   );
@@ -95,6 +95,5 @@ const styles = StyleSheet.create({
   rowPressed: { backgroundColor: colors.accent100, transform: [{ scale: 0.98 }] },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   rowLabel: { fontFamily: fonts.heading, fontSize: fontSizes.homeRowLabel, color: colors.text },
-  footer: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, paddingBottom: 20 },
-  footerText: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, letterSpacing: 0.2, fontStyle: 'italic' },
+  footer: { flex: 1, justifyContent: 'flex-end', overflow: 'hidden' },
 });

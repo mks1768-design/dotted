@@ -5,7 +5,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { NoteBoard } from '../components/NoteBoard';
 import { Card, Hr, Tag } from '../components/ui';
 import { noteKinds } from '../config/noteKinds';
-import { BoardIcon, BookIcon, BookshelfEmptyIcon, ChevronLeftIcon, ListIcon, PlusIcon, ShareIcon, TrashIcon } from '../icons';
+import { BoardIcon, BookIcon, ChevronLeftIcon, ListIcon, PlusIcon, ShareIcon, TrashIcon } from '../icons';
+import { ForestGrove } from '../illustrations';
 import { formatNoteDate } from '../state/formatDate';
 import { useNotes } from '../state/NotesContext';
 import { Note } from '../state/types';
@@ -59,7 +60,7 @@ export function NotesListScreen() {
 
       {state.notes.length === 0 ? (
         <View style={styles.empty}>
-          <BookshelfEmptyIcon size={84} />
+          <ForestGrove width={220} />
           <Text style={styles.emptyText}>No notes yet — tap + to write your first one.</Text>
         </View>
       ) : viewMode === 'board' ? (

@@ -20,6 +20,18 @@ export const colors = {
   danger: '#a13b2b',
 };
 
+// Scene palette for the flat forest illustrations. Kept apart from `colors`
+// because it's illustration-only — no UI chrome should reach for these.
+export const forest = {
+  hillBack: '#d6e2cb',
+  hillMid: '#b7cfa7',
+  ground: '#9ac088',
+  leafLight: '#86b46f',
+  leafMid: '#5f9459',
+  leafDeep: '#41704b',
+  trunk: '#a2794f',
+};
+
 export const fonts = {
   heading: 'CormorantGaramond_600SemiBold',
   headingWeight: '600' as const,
