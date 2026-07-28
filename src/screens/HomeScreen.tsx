@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   settingsBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
-  content: { flex: 1, justifyContent: 'center' },
-  rows: { paddingHorizontal: 20, gap: 14 },
+  content: { flex: 1 },
+  rows: { flex: 1, paddingHorizontal: 20, paddingVertical: 16, justifyContent: 'space-between' },
   row: {
     flexDirection: 'row',
     alignItems: 'center',
