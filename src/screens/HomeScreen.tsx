@@ -1,15 +1,14 @@
 import React from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Card, Tag } from '../components/ui';
+import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
-import { dateKey, promptForDate } from '../config/quests';
-import { CheckIcon, ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
+import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
 export function HomeScreen() {
-  const { state, goNotesList, switchWrite, switchImprove, switchScan, goSettings, startQuest } = useNotes();
+  const { state, goNotesList, switchWrite, switchImprove, switchScan, goSettings } = useNotes();
 
   const actionFor = (screenAction: (typeof homeMenu)[number]) => {
     if (screenAction.id === 'store') return goNotesList;
@@ -17,9 +16,6 @@ export function HomeScreen() {
     if (screenAction.kind === 'improve') return switchImprove;
     return switchScan;
   };
-
-  const todaysPrompt = promptForDate(new Date());
-  const questDoneToday = state.questCompletedDate === dateKey(new Date());
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -37,23 +33,6 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.content}>
-        <Card
-          onPress={questDoneToday ? undefined : () => startQuest(todaysPrompt)}
-          style={[styles.questCard, questDoneToday && styles.questCardDone] as any}
-        >
-          <View style={styles.questTop}>
-            <Text style={styles.questKicker}>TODAY'S PROMPT</Text>
-            {questDoneToday && (
-              <View style={styles.questDoneBadge}>
-                <CheckIcon size={12} color={colors.accent700} />
-                <Text style={styles.questDoneText}>Done</Text>
-              </View>
-            )}
-          </View>
-          <Text style={styles.questPrompt}>{todaysPrompt}</Text>
-          {!questDoneToday && <Text style={styles.questCta}>Write about this →</Text>}
-        </Card>
-
         <View style={styles.rows}>
           {homeMenu.map((item) => {
             const Icon = item.icon;
@@ -96,15 +75,7 @@ const styles = StyleSheet.create({
   settingsBtn: { width: 30, height: 30, borderRadius: 15, alignItems: 'center', justifyContent: 'center' },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
   content: { flex: 1, justifyContent: 'center' },
-  questCard: { marginHorizontal: 20, marginTop: 6 },
-  questCardDone: { opacity: 0.7 },
-  questTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  questKicker: { fontFamily: fonts.body, fontSize: 11, color: colors.neutral700, letterSpacing: 0.6 },
-  questDoneBadge: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  questDoneText: { fontFamily: fonts.body, fontSize: 12, color: colors.accent700 },
-  questPrompt: { fontFamily: fonts.heading, fontSize: 19, color: colors.text, marginTop: 4 },
-  questCta: { fontFamily: fonts.body, fontSize: 13, color: colors.accent700, marginTop: 10 },
-  rows: { paddingHorizontal: 20, paddingTop: 14, gap: 14 },
+  rows: { paddingHorizontal: 20, gap: 14 },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

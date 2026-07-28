@@ -16,7 +16,6 @@ import { AppState, Note, Tone } from './types';
 const STORAGE_KEY = '@dotted/notes';
 const API_KEY_STORAGE_KEY = 'dotted.anthropicApiKey';
 const ONBOARDED_STORAGE_KEY = '@dotted/hasOnboarded';
-const QUEST_STORAGE_KEY = '@dotted/questCompletedDate';
 const COPY_RESET_MS = 1500;
 const SPLASH_MS = 1600;
 
@@ -28,7 +27,6 @@ type Ctx = {
   goNotesList: () => void;
   goSettings: () => void;
   newNote: () => void;
-  startQuest: (prompt: string) => void;
   openNote: (note: Note) => void;
   storeNote: () => void;
   setTitle: (title: string) => void;
@@ -121,32 +119,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Hydrate the date the daily writing quest was last completed on.
-  useEffect(() => {
-    let cancelled = false;
-    AsyncStorage.getItem(QUEST_STORAGE_KEY)
-      .then((date) => {
-        if (!cancelled) dispatch({ type: 'HYDRATE_QUEST', date });
-      })
-      .catch(() => dispatch({ type: 'HYDRATE_QUEST', date: null }));
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
   // Persist notes whenever they change (after initial hydration).
   useEffect(() => {
     if (!state.hydrated) return;
     AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(state.notes)).catch(() => {});
   }, [state.notes, state.hydrated]);
-
-  // Persist the quest completion date whenever it changes.
-  useEffect(() => {
-    if (!state.hydrated) return;
-    if (state.questCompletedDate) {
-      AsyncStorage.setItem(QUEST_STORAGE_KEY, state.questCompletedDate).catch(() => {});
-    }
-  }, [state.questCompletedDate, state.hydrated]);
 
   useEffect(() => {
     splashTimer.current = setTimeout(() => dispatch({ type: 'SKIP_SPLASH' }), SPLASH_MS);
@@ -171,11 +148,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const newNote = useCallback(() => {
     draftGeneration.current += 1;
     dispatch({ type: 'NEW_NOTE' });
-  }, []);
-
-  const startQuest = useCallback((prompt: string) => {
-    draftGeneration.current += 1;
-    dispatch({ type: 'START_QUEST', prompt });
   }, []);
 
   const openNote = useCallback((note: Note) => {
@@ -315,7 +287,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       goNotesList: () => dispatch({ type: 'GO_NOTES_LIST' }),
       goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
       newNote,
-      startQuest,
       openNote,
       storeNote: () => dispatch({ type: 'STORE_NOTE' }),
       setTitle: (title) => dispatch({ type: 'SET_TITLE', title }),
@@ -348,7 +319,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       completeOnboarding,
       switchKind,
       newNote,
-      startQuest,
       openNote,
       pickPhoto,
       applyRewrite,

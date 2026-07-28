@@ -55,13 +55,6 @@ export function EditorScreen() {
       </View>
 
       <View style={styles.body}>
-        {state.activeQuestPrompt && (
-          <View style={styles.questBanner}>
-            <Text style={styles.questBannerKicker}>TODAY'S PROMPT</Text>
-            <Text style={styles.questBannerText}>{state.activeQuestPrompt}</Text>
-          </View>
-        )}
-
         <SegmentedControl
           value={state.draftKind}
           onChange={(kind) => kindHandlers[kind]()}
@@ -182,15 +175,6 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   deleteBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1, paddingHorizontal: 20, gap: 8 },
-  questBanner: {
-    borderLeftWidth: 2,
-    borderLeftColor: colors.accent,
-    paddingLeft: 12,
-    paddingVertical: 2,
-    marginBottom: 2,
-  },
-  questBannerKicker: { fontFamily: fonts.body, fontSize: 11, color: colors.neutral700, letterSpacing: 0.6 },
-  questBannerText: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, marginTop: 2 },
   paperRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 },
   paperLabel: {
     fontFamily: fonts.body,

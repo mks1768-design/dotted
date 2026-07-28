@@ -1,6 +1,5 @@
 import { NoteKind, noteKinds } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
-import { dateKey } from '../config/quests';
 import { ScreenName } from '../config/screens';
 import { generateId } from './id';
 import { AppState, Note, Tone } from './types';
@@ -32,9 +31,6 @@ export const initialState: AppState = {
 
   apiKey: null,
   aiError: null,
-
-  activeQuestPrompt: null,
-  questCompletedDate: null,
 };
 
 const blankDraft = {
@@ -47,7 +43,6 @@ const blankDraft = {
   notePhotoEditing: false,
   improvePrompt: '',
   aiError: null as string | null,
-  activeQuestPrompt: null as string | null,
 };
 
 export type Action =
@@ -61,8 +56,6 @@ export type Action =
   | { type: 'GO_NOTES_LIST' }
   | { type: 'GO_SETTINGS' }
   | { type: 'NEW_NOTE' }
-  | { type: 'START_QUEST'; prompt: string }
-  | { type: 'HYDRATE_QUEST'; date: string | null }
   | { type: 'OPEN_NOTE'; note: Note }
   | { type: 'STORE_NOTE' }
   | { type: 'SET_TITLE'; title: string }
@@ -123,12 +116,6 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'NEW_NOTE':
       return { ...state, ...blankDraft, screen: 'editor' };
 
-    case 'START_QUEST':
-      return { ...state, ...blankDraft, activeQuestPrompt: action.prompt, screen: 'editor' };
-
-    case 'HYDRATE_QUEST':
-      return { ...state, questCompletedDate: action.date };
-
     case 'OPEN_NOTE': {
       const n = action.note;
       return {
@@ -142,7 +129,6 @@ export function reducer(state: AppState, action: Action): AppState {
         notePhotoEditing: false,
         improvePrompt: '',
         aiError: null,
-        activeQuestPrompt: null,
         screen: screenForKind(n.kind),
         scanned: false,
       };
@@ -151,8 +137,6 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'STORE_NOTE': {
       const title = state.draftTitle.trim() || 'Untitled';
       const snippet = state.draftBody.trim().slice(0, 90) || 'No content yet.';
-      const completesQuest = state.activeQuestPrompt != null && state.draftBody.trim().length > 0;
-      const questCompletedDate = completesQuest ? dateKey(new Date()) : state.questCompletedDate;
       if (state.editingId != null) {
         return {
           ...state,
@@ -162,8 +146,6 @@ export function reducer(state: AppState, action: Action): AppState {
               : n
           ),
           screen: 'library',
-          activeQuestPrompt: null,
-          questCompletedDate,
         };
       }
       const newNote: Note = {
@@ -176,13 +158,7 @@ export function reducer(state: AppState, action: Action): AppState {
         color: state.draftColor,
         photoUri: state.draftPhotoUri,
       };
-      return {
-        ...state,
-        notes: [newNote, ...state.notes],
-        screen: 'library',
-        activeQuestPrompt: null,
-        questCompletedDate,
-      };
+      return { ...state, notes: [newNote, ...state.notes], screen: 'library' };
     }
 
     case 'SET_TITLE':

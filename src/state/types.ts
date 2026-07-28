@@ -42,7 +42,4 @@ export type AppState = {
 
   apiKey: string | null;
   aiError: string | null;
-
-  activeQuestPrompt: string | null;
-  questCompletedDate: string | null;
 };
