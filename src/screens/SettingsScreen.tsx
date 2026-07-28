@@ -1,64 +1,26 @@
-import * as Clipboard from 'expo-clipboard';
-import React, { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import React from 'react';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Hr, SegmentedControl, Tag } from '../components/ui';
+import { Hr, Tag } from '../components/ui';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
+function Row({ title, subtitle, onPress, right }: { title: string; subtitle: string; onPress: () => void; right?: React.ReactNode }) {
+  return (
+    <Pressable style={styles.row} onPress={onPress} accessibilityRole="button" accessibilityLabel={title}>
+      <View style={{ flex: 1 }}>
+        <Text style={styles.rowTitle}>{title}</Text>
+        <Text style={styles.rowSubtitle}>{subtitle}</Text>
+      </View>
+      {right ?? <ChevronRightIcon />}
+    </Pressable>
+  );
+}
+
 export function SettingsScreen() {
-  const { state, backToHome, setApiKey, clearApiKey, setAiQuality, goPaywall, exportNotes, importNotes } = useNotes();
-  const [draft, setDraft] = useState('');
-  const [saving, setSaving] = useState(false);
+  const { state, backToHome, goSettingsAi, goSettingsBackup, goPaywall } = useNotes();
   const hasKey = !!state.apiKey;
-
-  const [exporting, setExporting] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const [backupStatus, setBackupStatus] = useState<{ text: string; isError: boolean } | null>(null);
-
-  const onSave = async () => {
-    if (!draft.trim()) return;
-    setSaving(true);
-    await setApiKey(draft.trim());
-    setSaving(false);
-    setDraft('');
-  };
-
-  const onClear = async () => {
-    await clearApiKey();
-    setDraft('');
-  };
-
-  const onPaste = async () => {
-    const text = await Clipboard.getStringAsync().catch(() => '');
-    if (text.trim()) setDraft(text.trim());
-  };
-
-  const onExport = async () => {
-    setBackupStatus(null);
-    setExporting(true);
-    const result = await exportNotes();
-    setExporting(false);
-    setBackupStatus(
-      result.ok
-        ? { text: `Exported ${result.count} note${result.count === 1 ? '' : 's'}.`, isError: false }
-        : { text: result.error, isError: true }
-    );
-  };
-
-  const onImport = async () => {
-    setBackupStatus(null);
-    setImporting(true);
-    const result = await importNotes();
-    setImporting(false);
-    if ('canceled' in result) return;
-    setBackupStatus(
-      result.ok
-        ? { text: `Imported ${result.count} note${result.count === 1 ? '' : 's'}.`, isError: false }
-        : { text: result.error, isError: true }
-    );
-  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -70,91 +32,18 @@ export function SettingsScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.scroll}>
-        <Pressable style={styles.proRow} onPress={() => goPaywall('settings')} accessibilityRole="button" accessibilityLabel="dotted Pro">
-          <View>
-            <Text style={styles.proTitle}>dotted Pro</Text>
-            <Text style={styles.proSubtitle}>{state.isPro ? 'Unlocked' : 'Character paper styles, and more to come'}</Text>
-          </View>
-          {state.isPro ? <Tag label="Pro" variant="accent" /> : <ChevronRightIcon />}
-        </Pressable>
-
-        <Hr style={{ marginVertical: 4 }} />
-
-        <View>
-          <Text style={styles.kicker}>Anthropic API key</Text>
-          <Text style={styles.status}>{hasKey ? 'Connected — Improve and Scan use real AI.' : 'Not set — Improve and Scan use placeholder text.'}</Text>
-        </View>
-
-        <View style={styles.inputRow}>
-          <TextInput
-            value={draft}
-            onChangeText={setDraft}
-            placeholder={hasKey ? 'Enter a new key to replace it' : 'sk-ant-…'}
-            placeholderTextColor={colors.neutral700}
-            secureTextEntry
-            autoCapitalize="none"
-            autoCorrect={false}
-            style={[styles.input, { flex: 1 }]}
+        <View style={styles.group}>
+          <Row
+            title="dotted Pro"
+            subtitle={state.isPro ? 'Unlocked' : 'Character paper styles, and more to come'}
+            onPress={() => goPaywall('settings')}
+            right={state.isPro ? <Tag label="Pro" variant="accent" /> : undefined}
           />
-          <Button title="Paste" variant="secondary" onPress={onPaste} />
+          <Hr />
+          <Row title="AI" subtitle={hasKey ? 'Connected' : 'Add an API key to use Improve and Scan'} onPress={goSettingsAi} />
+          <Hr />
+          <Row title="Backup" subtitle="Export or import your notes" onPress={goSettingsBackup} />
         </View>
-
-        <View style={styles.actionsRow}>
-          <Button title="Save" onPress={onSave} disabled={!draft.trim()} loading={saving} style={{ flex: 1 }} />
-          {hasKey && <Button title="Remove key" variant="ghost" onPress={onClear} style={{ flex: 1 }} />}
-        </View>
-
-        <Text style={styles.helpText}>
-          Get a key at console.anthropic.com. It's stored only on this device (Keychain/Keystore on iOS and Android,
-          local storage on web) and is sent straight from this app to Anthropic — dotted has no server of its own.
-        </Text>
-
-        <Hr style={{ marginVertical: 8 }} />
-
-        <View>
-          <Text style={styles.kicker}>AI quality</Text>
-          <Text style={styles.status}>
-            High uses a stronger model for Improve and Scan — noticeably better results, at a higher cost per
-            request on your own API key.
-          </Text>
-        </View>
-        <SegmentedControl
-          value={state.aiQuality}
-          onChange={setAiQuality}
-          options={[
-            { label: 'Standard', value: 'standard' },
-            { label: 'High', value: 'high' },
-          ]}
-        />
-
-        <Hr style={{ marginVertical: 8 }} />
-
-        <View>
-          <Text style={styles.kicker}>Backup</Text>
-          <Text style={styles.status}>
-            Every note lives only on this device. Export a backup file every so often so a lost or wiped phone
-            doesn't mean losing what you've written.
-          </Text>
-        </View>
-
-        <View style={styles.actionsRow}>
-          <Button title="Export all notes" onPress={onExport} loading={exporting} disabled={importing} style={{ flex: 1 }} />
-          <Button
-            title="Import notes"
-            variant="secondary"
-            onPress={onImport}
-            loading={importing}
-            disabled={exporting}
-            style={{ flex: 1 }}
-          />
-        </View>
-        {backupStatus && (
-          <Text style={[styles.backupStatus, backupStatus.isError && styles.backupStatusError]}>{backupStatus.text}</Text>
-        )}
-        <Text style={styles.helpText}>
-          Import adds notes from a backup file alongside what's already here — it won't delete or overwrite
-          anything currently on this device.
-        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -165,35 +54,15 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
-  scroll: { paddingHorizontal: 20, paddingBottom: 24, gap: 14 },
-  proRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    padding: 16,
+  scroll: { paddingHorizontal: 20, paddingBottom: 24 },
+  group: {
     borderRadius: radii.md,
     borderWidth: 1,
     borderColor: colors.divider,
     backgroundColor: colors.surface,
     ...shadows.sm,
   },
-  proTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text },
-  proSubtitle: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, marginTop: 2 },
-  kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, marginBottom: 6 },
-  status: { fontFamily: fonts.body, fontSize: 14, lineHeight: 20, color: colors.text },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.divider,
-    borderRadius: 12,
-    padding: 12,
-    fontFamily: fonts.body,
-    fontSize: 14,
-    color: colors.text,
-    outlineWidth: 0,
-  },
-  inputRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
-  actionsRow: { flexDirection: 'row', gap: 12 },
-  helpText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.neutral700 },
-  backupStatus: { fontFamily: fonts.body, fontSize: 13, color: colors.accent700 },
-  backupStatusError: { color: colors.danger },
+  row: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: 16, gap: 12 },
+  rowTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text },
+  rowSubtitle: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, marginTop: 2 },
 });
