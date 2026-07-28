@@ -1,3 +1,4 @@
+import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -27,6 +28,11 @@ export function SettingsScreen() {
   const onClear = async () => {
     await clearApiKey();
     setDraft('');
+  };
+
+  const onPaste = async () => {
+    const text = await Clipboard.getStringAsync().catch(() => '');
+    if (text.trim()) setDraft(text.trim());
   };
 
   const onExport = async () => {
@@ -79,16 +85,19 @@ export function SettingsScreen() {
           <Text style={styles.status}>{hasKey ? 'Connected — Improve and Scan use real AI.' : 'Not set — Improve and Scan use placeholder text.'}</Text>
         </View>
 
-        <TextInput
-          value={draft}
-          onChangeText={setDraft}
-          placeholder={hasKey ? 'Enter a new key to replace it' : 'sk-ant-…'}
-          placeholderTextColor={colors.neutral700}
-          secureTextEntry
-          autoCapitalize="none"
-          autoCorrect={false}
-          style={styles.input}
-        />
+        <View style={styles.inputRow}>
+          <TextInput
+            value={draft}
+            onChangeText={setDraft}
+            placeholder={hasKey ? 'Enter a new key to replace it' : 'sk-ant-…'}
+            placeholderTextColor={colors.neutral700}
+            secureTextEntry
+            autoCapitalize="none"
+            autoCorrect={false}
+            style={[styles.input, { flex: 1 }]}
+          />
+          <Button title="Paste" variant="secondary" onPress={onPaste} />
+        </View>
 
         <View style={styles.actionsRow}>
           <Button title="Save" onPress={onSave} disabled={!draft.trim()} loading={saving} style={{ flex: 1 }} />
@@ -182,6 +191,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     outlineWidth: 0,
   },
+  inputRow: { flexDirection: 'row', gap: 8, alignItems: 'center' },
   actionsRow: { flexDirection: 'row', gap: 12 },
   helpText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.neutral700 },
   backupStatus: { fontFamily: fonts.body, fontSize: 13, color: colors.accent700 },
