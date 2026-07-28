@@ -1,7 +1,15 @@
+import { AiQuality } from '../state/types';
+
 const API_URL = 'https://api.anthropic.com/v1/messages';
-const MODEL = 'claude-sonnet-5';
 const API_VERSION = '2023-06-01';
 const TIMEOUT_MS = 30000;
+
+// 'high' costs noticeably more per request on the user's own API key, so it's
+// an opt-in Settings toggle rather than the default.
+const MODEL_FOR_QUALITY: Record<AiQuality, string> = {
+  standard: 'claude-sonnet-5',
+  high: 'claude-opus-5',
+};
 
 export class AnthropicError extends Error {}
 
@@ -46,22 +54,23 @@ function textFromResponse(json: any): string {
 
 const TONE_INSTRUCTIONS: Record<string, string> = {
   polish: 'Lightly polish grammar, punctuation, and flow. Keep the meaning, length, and voice close to the original.',
-  concise: 'Compress this down to one crisp, complete sentence that keeps the core meaning.',
+  concise: 'Compress this down as short as truly works for its length, keeping every point that matters — a single sentence for a short note, a tight paragraph for a longer one.',
   formal: 'Rewrite this in a more formal register — expand contractions, tighten the phrasing.',
 };
 
 export async function rewriteNote(
   apiKey: string,
   body: string,
-  opts: { tone: string; prompt?: string }
+  opts: { tone: string; prompt?: string; quality?: AiQuality }
 ): Promise<string> {
   const instruction = opts.prompt?.trim() ? opts.prompt.trim() : TONE_INSTRUCTIONS[opts.tone] ?? TONE_INSTRUCTIONS.polish;
   const json = await callMessages(apiKey, {
-    model: MODEL,
-    max_tokens: 600,
+    model: MODEL_FOR_QUALITY[opts.quality ?? 'standard'],
+    max_tokens: 2000,
     system:
-      'You rewrite short personal notes for their author. Follow the instruction exactly. ' +
-      'Reply with ONLY the rewritten note text — no preamble, no quotes, no explanation.',
+      'You rewrite short personal notes for their author. Follow the instruction exactly, but preserve their ' +
+      "distinctive phrasing and voice wherever the instruction doesn't require changing it — don't flatten it into " +
+      'generic, corporate-sounding prose. Reply with ONLY the rewritten note text — no preamble, no quotes, no explanation.',
     messages: [{ role: 'user', content: `Instruction: ${instruction}\n\nNote:\n${body}` }],
   });
   return textFromResponse(json) || body;
@@ -70,11 +79,12 @@ export async function rewriteNote(
 export async function explainScan(
   apiKey: string,
   base64: string,
-  mimeType: string
+  mimeType: string,
+  quality: AiQuality = 'standard'
 ): Promise<{ extractedText: string; explainedText: string }> {
   const json = await callMessages(apiKey, {
-    model: MODEL,
-    max_tokens: 1400,
+    model: MODEL_FOR_QUALITY[quality],
+    max_tokens: 2200,
     system:
       "You help someone understand a page they just photographed from a book or document — read it the way a well-read " +
       'friend would, looking over their shoulder. First, transcribe the visible text exactly as it appears (fix only ' +

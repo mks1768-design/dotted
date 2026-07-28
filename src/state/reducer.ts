@@ -2,7 +2,7 @@ import { NoteKind, noteKinds } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
 import { ScreenName } from '../config/screens';
 import { generateId } from './id';
-import { AppState, Note, Tone } from './types';
+import { AiQuality, AppState, Note, Tone } from './types';
 
 export const initialState: AppState = {
   hydrated: false,
@@ -31,6 +31,7 @@ export const initialState: AppState = {
 
   apiKey: null,
   aiError: null,
+  aiQuality: 'standard',
 };
 
 const blankDraft = {
@@ -49,6 +50,8 @@ export type Action =
   | { type: 'HYDRATE'; notes: Note[] }
   | { type: 'HYDRATE_API_KEY'; apiKey: string | null }
   | { type: 'SET_API_KEY'; apiKey: string | null }
+  | { type: 'HYDRATE_AI_QUALITY'; value: AiQuality }
+  | { type: 'SET_AI_QUALITY'; value: AiQuality }
   | { type: 'HYDRATE_ONBOARDED'; value: boolean }
   | { type: 'COMPLETE_ONBOARDING' }
   | { type: 'SKIP_SPLASH' }
@@ -96,6 +99,12 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_API_KEY':
       return { ...state, apiKey: action.apiKey };
+
+    case 'HYDRATE_AI_QUALITY':
+      return { ...state, aiQuality: action.value };
+
+    case 'SET_AI_QUALITY':
+      return { ...state, aiQuality: action.value };
 
     case 'HYDRATE_ONBOARDED':
       return { ...state, hasOnboarded: action.value };

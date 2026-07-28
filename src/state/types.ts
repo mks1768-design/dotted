@@ -14,6 +14,7 @@ export type Note = {
 };
 
 export type Tone = 'polish' | 'concise' | 'formal';
+export type AiQuality = 'standard' | 'high';
 
 export type AppState = {
   hydrated: boolean;
@@ -42,4 +43,5 @@ export type AppState = {
 
   apiKey: string | null;
   aiError: string | null;
+  aiQuality: AiQuality;
 };

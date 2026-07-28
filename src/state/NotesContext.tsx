@@ -11,11 +11,12 @@ import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secu
 import { generateId } from './id';
 import { initialState, reducer } from './reducer';
 import { rewriteFor } from './rewrite';
-import { AppState, Note, Tone } from './types';
+import { AiQuality, AppState, Note, Tone } from './types';
 
 const STORAGE_KEY = '@dotted/notes';
 const API_KEY_STORAGE_KEY = 'dotted.anthropicApiKey';
 const ONBOARDED_STORAGE_KEY = '@dotted/hasOnboarded';
+const AI_QUALITY_STORAGE_KEY = '@dotted/aiQuality';
 const COPY_RESET_MS = 1500;
 const SPLASH_MS = 1600;
 
@@ -49,6 +50,7 @@ type Ctx = {
   insertScan: () => void;
   setApiKey: (key: string) => Promise<void>;
   clearApiKey: () => Promise<void>;
+  setAiQuality: (value: AiQuality) => void;
   shareNote: (note: Note) => Promise<void>;
   deleteNote: (id: string) => void;
   exportNotes: () => Promise<{ ok: true; count: number } | { ok: false; error: string }>;
@@ -120,6 +122,21 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Hydrate the saved AI quality preference (defaults to 'standard' if unset).
+  useEffect(() => {
+    let cancelled = false;
+    AsyncStorage.getItem(AI_QUALITY_STORAGE_KEY)
+      .then((value) => {
+        if (!cancelled && (value === 'standard' || value === 'high')) {
+          dispatch({ type: 'HYDRATE_AI_QUALITY', value });
+        }
+      })
+      .catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   // Persist notes whenever they change (after initial hydration).
   useEffect(() => {
     if (!state.hydrated) return;
@@ -164,6 +181,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   const clearApiKey = useCallback(async () => {
     await deleteSecureItem(API_KEY_STORAGE_KEY);
     dispatch({ type: 'SET_API_KEY', apiKey: null });
+  }, []);
+
+  const setAiQuality = useCallback((value: AiQuality) => {
+    AsyncStorage.setItem(AI_QUALITY_STORAGE_KEY, value).catch(() => {});
+    dispatch({ type: 'SET_AI_QUALITY', value });
   }, []);
 
   const pickPhoto = useCallback(async () => {
@@ -218,7 +240,12 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
     try {
       if (!asset.base64) throw new AnthropicError('Could not read the captured photo.');
-      const { extractedText, explainedText } = await explainScan(apiKey, asset.base64, asset.mimeType || 'image/jpeg');
+      const { extractedText, explainedText } = await explainScan(
+        apiKey,
+        asset.base64,
+        asset.mimeType || 'image/jpeg',
+        stateRef.current.aiQuality
+      );
       if (draftGeneration.current !== myGeneration) return;
       dispatch({ type: 'SCAN_PAGE', extractedText, explainedText });
     } catch (err) {
@@ -243,7 +270,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     const myGeneration = draftGeneration.current;
     dispatch({ type: 'SET_REWRITE_LOADING', loading: true });
     try {
-      const rewritten = await rewriteNote(apiKey, draftBody, { tone, prompt: improvePrompt });
+      const rewritten = await rewriteNote(apiKey, draftBody, { tone, prompt: improvePrompt, quality: stateRef.current.aiQuality });
       if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
       dispatch({ type: 'APPLY_REWRITE', rewritten });
     } catch (err) {
@@ -310,6 +337,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       insertScan: () => dispatch({ type: 'INSERT_SCAN' }),
       setApiKey,
       clearApiKey,
+      setAiQuality,
       shareNote,
       deleteNote,
       exportNotes,
@@ -328,6 +356,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       copyScan,
       setApiKey,
       clearApiKey,
+      setAiQuality,
       shareNote,
       deleteNote,
       exportNotes,

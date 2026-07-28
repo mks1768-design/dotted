@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Hr } from '../components/ui';
+import { Button, Hr, SegmentedControl } from '../components/ui';
 import { ChevronLeftIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes } from '../theme/tokens';
 
 export function SettingsScreen() {
-  const { state, backToHome, setApiKey, clearApiKey, exportNotes, importNotes } = useNotes();
+  const { state, backToHome, setApiKey, clearApiKey, setAiQuality, exportNotes, importNotes } = useNotes();
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const hasKey = !!state.apiKey;
@@ -89,6 +89,24 @@ export function SettingsScreen() {
           Get a key at console.anthropic.com. It's stored only on this device (Keychain/Keystore on iOS and Android,
           local storage on web) and is sent straight from this app to Anthropic — dotted has no server of its own.
         </Text>
+
+        <Hr style={{ marginVertical: 8 }} />
+
+        <View>
+          <Text style={styles.kicker}>AI quality</Text>
+          <Text style={styles.status}>
+            High uses a stronger model for Improve and Scan — noticeably better results, at a higher cost per
+            request on your own API key.
+          </Text>
+        </View>
+        <SegmentedControl
+          value={state.aiQuality}
+          onChange={setAiQuality}
+          options={[
+            { label: 'Standard', value: 'standard' },
+            { label: 'High', value: 'high' },
+          ]}
+        />
 
         <Hr style={{ marginVertical: 8 }} />
 
