@@ -1,7 +1,5 @@
 import React from 'react';
 import { ScreenTransition } from './components/ScreenTransition';
-import { AiSettingsScreen } from './screens/AiSettingsScreen';
-import { BackupScreen } from './screens/BackupScreen';
 import { EditorScreen } from './screens/EditorScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
@@ -42,10 +40,6 @@ export function RootView() {
         return <ScanScreen />;
       case 'settings':
         return <SettingsScreen />;
-      case 'settingsAi':
-        return <AiSettingsScreen />;
-      case 'settingsBackup':
-        return <BackupScreen />;
       case 'paperPicker':
         return <PaperPickerScreen />;
       default:

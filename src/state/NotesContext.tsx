@@ -27,8 +27,6 @@ type Ctx = {
   backToHome: () => void;
   goNotesList: () => void;
   goSettings: () => void;
-  goSettingsAi: () => void;
-  goSettingsBackup: () => void;
   newNote: () => void;
   openNote: (note: Note) => void;
   storeNote: () => void;
@@ -316,8 +314,6 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       backToHome: () => dispatch({ type: 'GO_HOME' }),
       goNotesList: () => dispatch({ type: 'GO_NOTES_LIST' }),
       goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
-      goSettingsAi: () => dispatch({ type: 'GO_SETTINGS_AI' }),
-      goSettingsBackup: () => dispatch({ type: 'GO_SETTINGS_BACKUP' }),
       newNote,
       openNote,
       storeNote: () => dispatch({ type: 'STORE_NOTE' }),

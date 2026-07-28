@@ -58,8 +58,6 @@ export type Action =
   | { type: 'GO_HOME' }
   | { type: 'GO_NOTES_LIST' }
   | { type: 'GO_SETTINGS' }
-  | { type: 'GO_SETTINGS_AI' }
-  | { type: 'GO_SETTINGS_BACKUP' }
   | { type: 'NEW_NOTE' }
   | { type: 'OPEN_NOTE'; note: Note }
   | { type: 'STORE_NOTE' }
@@ -125,12 +123,6 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'GO_SETTINGS':
       return { ...state, screen: 'settings' };
-
-    case 'GO_SETTINGS_AI':
-      return { ...state, screen: 'settingsAi' };
-
-    case 'GO_SETTINGS_BACKUP':
-      return { ...state, screen: 'settingsBackup' };
 
     case 'NEW_NOTE':
       return { ...state, ...blankDraft, screen: 'editor' };

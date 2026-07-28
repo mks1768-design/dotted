@@ -7,6 +7,4 @@ export type ScreenName =
   | 'ai'
   | 'camera'
   | 'settings'
-  | 'settingsAi'
-  | 'settingsBackup'
   | 'paperPicker';
