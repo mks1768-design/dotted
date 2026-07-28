@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
 import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
-import { ForestScene } from '../illustrations';
+import { LibraryScene } from '../illustrations';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii, shadows } from '../theme/tokens';
 
@@ -57,7 +57,7 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.footer}>
-        <ForestScene height={240} />
+        <LibraryScene height={240} />
       </View>
     </SafeAreaView>
   );
