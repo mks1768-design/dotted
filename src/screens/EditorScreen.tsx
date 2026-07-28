@@ -6,8 +6,8 @@ import { ConfirmDialog } from '../components/ConfirmDialog';
 import { Button, Hr, SegmentedControl } from '../components/ui';
 import { RuledPaper } from '../components/RuledPaper';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
-import { paperBackgroundColor, paperStyles } from '../config/paperStyles';
-import { ChevronLeftIcon, CloseIcon, EditIcon, PhotoIcon, TrashIcon } from '../icons';
+import { paperDecorationFor, paperStyleFor } from '../config/paperStyles';
+import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon, PhotoIcon, TrashIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes } from '../theme/tokens';
 
@@ -21,7 +21,7 @@ export function EditorScreen() {
     switchWrite,
     switchImprove,
     switchScan,
-    setColor,
+    goPaperPicker,
     pickPhoto,
     removePhoto,
     startEditingPhoto,
@@ -32,6 +32,7 @@ export function EditorScreen() {
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
   const isPhoto = state.draftColor === 'photo';
+  const currentPaper = paperStyleFor(state.draftColor);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -61,26 +62,14 @@ export function EditorScreen() {
           options={noteKindOrder.map((k) => ({ label: noteKinds[k].segmentLabel, value: k }))}
         />
 
-        <View style={styles.paperRow}>
+        <Pressable style={styles.paperRow} onPress={goPaperPicker} accessibilityRole="button" accessibilityLabel="Choose paper">
           <Text style={styles.paperLabel}>Paper</Text>
-          {paperStyles.map((swatch) => {
-            const active = state.draftColor === swatch.id;
-            return (
-              <Pressable
-                key={swatch.id}
-                onPress={() => setColor(swatch.id)}
-                style={[
-                  styles.swatch,
-                  { backgroundColor: swatch.swatchColor, borderColor: active ? colors.text : 'transparent' },
-                ]}
-                accessibilityRole="radio"
-                accessibilityState={{ selected: active }}
-              >
-                {swatch.isPhoto && <PhotoIcon size={11} />}
-              </Pressable>
-            );
-          })}
-        </View>
+          <View style={[styles.paperSwatch, { backgroundColor: currentPaper.swatchColor }]}>
+            {currentPaper.isPhoto && <PhotoIcon size={11} />}
+          </View>
+          <Text style={styles.paperValue}>{currentPaper.label}</Text>
+          <ChevronRightIcon size={14} />
+        </Pressable>
 
         <TextInput
           value={state.draftTitle}
@@ -134,7 +123,7 @@ export function EditorScreen() {
           </View>
         ) : (
           <View style={styles.flatBody}>
-            <RuledPaper tint={paperBackgroundColor(state.draftColor)} />
+            <RuledPaper tint={currentPaper.swatchColor} decoration={paperDecorationFor(state.draftColor)} />
             <TextInput
               value={state.draftBody}
               onChangeText={setBody}
@@ -175,7 +164,7 @@ const styles = StyleSheet.create({
   headerRight: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   deleteBtn: { width: 34, height: 34, borderRadius: 17, alignItems: 'center', justifyContent: 'center' },
   body: { flex: 1, paddingHorizontal: 20, gap: 8 },
-  paperRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4 },
+  paperRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginVertical: 4, alignSelf: 'flex-start' },
   paperLabel: {
     fontFamily: fonts.body,
     fontSize: fontSizes.smallLabel,
@@ -183,16 +172,17 @@ const styles = StyleSheet.create({
     textTransform: 'uppercase',
     color: colors.neutral700,
     opacity: 0.7,
-    marginRight: 2,
   },
-  swatch: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
+  paperSwatch: {
+    width: 16,
+    height: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: colors.divider,
     alignItems: 'center',
     justifyContent: 'center',
   },
+  paperValue: { fontFamily: fonts.body, fontSize: 13, color: colors.text },
   titleInput: {
     fontFamily: fonts.heading,
     fontSize: fontSizes.screenTitle,

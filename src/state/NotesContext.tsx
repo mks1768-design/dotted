@@ -34,7 +34,8 @@ type Ctx = {
   switchWrite: () => void;
   switchImprove: () => void;
   switchScan: () => void;
-  setColor: (color: PaperStyleId) => void;
+  goPaperPicker: () => void;
+  selectPaperStyle: (color: PaperStyleId) => void;
   pickPhoto: () => Promise<void>;
   removePhoto: () => void;
   startEditingPhoto: () => void;
@@ -294,7 +295,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       switchWrite: () => switchKind('write'),
       switchImprove: () => switchKind('improve'),
       switchScan: () => switchKind('scan'),
-      setColor: (color) => dispatch({ type: 'SET_COLOR', color }),
+      goPaperPicker: () => dispatch({ type: 'GO_PAPER_PICKER' }),
+      selectPaperStyle: (color) => dispatch({ type: 'SELECT_PAPER_STYLE', color }),
       pickPhoto,
       removePhoto: () => dispatch({ type: 'REMOVE_PHOTO' }),
       startEditingPhoto: () => dispatch({ type: 'START_EDITING_PHOTO' }),

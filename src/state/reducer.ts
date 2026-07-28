@@ -62,6 +62,8 @@ export type Action =
   | { type: 'SET_BODY'; body: string }
   | { type: 'SWITCH_KIND'; kind: NoteKind }
   | { type: 'SET_COLOR'; color: PaperStyleId }
+  | { type: 'GO_PAPER_PICKER' }
+  | { type: 'SELECT_PAPER_STYLE'; color: PaperStyleId }
   | { type: 'SET_PHOTO_URI'; uri: string }
   | { type: 'REMOVE_PHOTO' }
   | { type: 'START_EDITING_PHOTO' }
@@ -178,6 +180,12 @@ export function reducer(state: AppState, action: Action): AppState {
 
     case 'SET_COLOR':
       return { ...state, draftColor: action.color };
+
+    case 'GO_PAPER_PICKER':
+      return { ...state, screen: 'paperPicker' };
+
+    case 'SELECT_PAPER_STYLE':
+      return { ...state, draftColor: action.color, screen: 'editor' };
 
     case 'SET_PHOTO_URI':
       return { ...state, draftPhotoUri: action.uri, draftColor: 'photo' };

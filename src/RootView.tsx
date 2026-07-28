@@ -5,6 +5,7 @@ import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
 import { NotesListScreen } from './screens/NotesListScreen';
 import { OnboardingScreen } from './screens/OnboardingScreen';
+import { PaperPickerScreen } from './screens/PaperPickerScreen';
 import { ScanScreen } from './screens/ScanScreen';
 import { SettingsScreen } from './screens/SettingsScreen';
 import { SplashScreen } from './screens/SplashScreen';
@@ -39,6 +40,8 @@ export function RootView() {
         return <ScanScreen />;
       case 'settings':
         return <SettingsScreen />;
+      case 'paperPicker':
+        return <PaperPickerScreen />;
       default:
         return <HomeScreen />;
     }
