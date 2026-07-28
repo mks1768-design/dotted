@@ -9,7 +9,7 @@ import { noteKindOrder, noteKinds } from '../config/noteKinds';
 import { paperDecorationFor, paperStyleFor } from '../config/paperStyles';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon, PhotoIcon, TrashIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes, spacing } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 export function EditorScreen() {
   const {
@@ -108,7 +108,7 @@ export function EditorScreen() {
                   </>
                 ) : (
                   <>
-                    <LinearGradient colors={['rgba(243,242,242,0.92)', 'transparent']} style={styles.captionGradient}>
+                    <LinearGradient colors={[colors.paperVeilStrong, 'transparent']} style={styles.captionGradient}>
                       <Text style={styles.captionText}>
                         {state.draftBody.trim() ? state.draftBody : 'Tap the pencil to add words to this note.'}
                       </Text>
@@ -200,7 +200,17 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     outlineWidth: 0,
   },
-  flatBody: { flex: 1, marginTop: 6, borderRadius: 4, overflow: 'hidden', position: 'relative' },
+  // The writing surface is itself a sheet on the desk — bottom margin so its
+  // edge is visible rather than running off the screen.
+  flatBody: {
+    flex: 1,
+    marginTop: 6,
+    marginBottom: 14,
+    borderRadius: radii.paper,
+    overflow: 'hidden',
+    position: 'relative',
+    ...shadows.paper,
+  },
   flatTextInput: {
     position: 'absolute',
     top: 0,
@@ -216,7 +226,14 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     outlineWidth: 0,
   },
-  photoArea: { flex: 1, borderRadius: 14, overflow: 'hidden', marginBottom: 16, backgroundColor: colors.neutral200 },
+  photoArea: {
+    flex: 1,
+    borderRadius: radii.paper,
+    overflow: 'hidden',
+    marginBottom: 14,
+    backgroundColor: colors.neutral200,
+    ...shadows.paper,
+  },
   photoPlaceholder: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 10, padding: 24 },
   photoPlaceholderText: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, textAlign: 'center' },
   photoClose: {
@@ -227,7 +244,7 @@ const styles = StyleSheet.create({
     width: spacing.tapTarget,
     height: spacing.tapTarget,
     borderRadius: spacing.tapTarget / 2,
-    backgroundColor: 'rgba(243,242,242,0.82)',
+    backgroundColor: colors.paperVeil,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -237,7 +254,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(243,242,242,0.7)',
+    backgroundColor: colors.paperVeilSoft,
     pointerEvents: 'none',
   },
   photoTextInput: {

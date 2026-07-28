@@ -3,9 +3,10 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Tag } from '../components/ui';
 import { homeMenu } from '../config/homeMenu';
+import { PaperRules } from '../components/RuledPaper';
 import { ChevronRightIcon, DotMark, SettingsIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes, spacing } from '../theme/tokens';
+import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 export function HomeScreen() {
   const { state, goNotesList, switchWrite, switchImprove, switchScan, goSettings } = useNotes();
@@ -33,26 +34,25 @@ export function HomeScreen() {
       </View>
 
       <View style={styles.rows}>
-        {homeMenu.map((item, i) => {
+        {homeMenu.map((item) => {
           const Icon = item.icon;
           return (
-            <React.Fragment key={item.id}>
-              {i > 0 && <View style={styles.hr} />}
-              <Pressable
-                onPress={actionFor(item)}
-                style={({ pressed, hovered }: any) => [
-                  styles.row,
-                  hovered && { backgroundColor: colors.accent100 },
-                  pressed && { backgroundColor: colors.accent100, transform: [{ scale: 0.98 }] },
-                ]}
-              >
-                <View style={styles.rowLeft}>
-                  <Icon size={52} />
-                  <Text style={styles.rowLabel}>{item.label}</Text>
-                </View>
-                <ChevronRightIcon />
-              </Pressable>
-            </React.Fragment>
+            <Pressable
+              key={item.id}
+              onPress={actionFor(item)}
+              style={({ pressed, hovered }: any) => [
+                styles.row,
+                hovered && styles.rowHovered,
+                pressed && styles.rowPressed,
+              ]}
+            >
+              <PaperRules />
+              <View style={styles.rowLeft}>
+                <Icon size={52} bgColor={colors.surface} />
+                <Text style={styles.rowLabel}>{item.label}</Text>
+              </View>
+              <ChevronRightIcon />
+            </Pressable>
           );
         })}
       </View>
@@ -80,16 +80,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   wordmark: { fontFamily: fonts.heading, fontSize: 18, color: colors.text },
-  rows: { flex: 1 },
-  hr: { height: StyleSheet.hairlineWidth, backgroundColor: colors.divider },
+  // Four sheets stacked down the desk. They still divide the screen evenly, so
+  // the reach and rhythm of the old full-bleed rows is unchanged.
+  rows: { flex: 1, paddingHorizontal: 14, paddingTop: 2, paddingBottom: 16, gap: 10 },
   row: {
     flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     gap: 16,
-    paddingHorizontal: 24,
+    paddingHorizontal: 18,
+    borderRadius: radii.paper,
+    backgroundColor: colors.surface,
+    overflow: 'hidden',
+    ...shadows.paper,
   },
+  // Pressing lifts the sheet rather than tinting it — the tint would fight the
+  // printed rules underneath.
+  rowHovered: { backgroundColor: colors.neutral100 },
+  rowPressed: { backgroundColor: colors.neutral100, transform: [{ scale: 0.985 }] },
   rowLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
   rowLabel: { fontFamily: fonts.heading, fontSize: fontSizes.homeRowLabel, color: colors.text },
 });

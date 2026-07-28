@@ -2,9 +2,10 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { paperBackgroundColor } from '../config/paperStyles';
+import { PaperRules } from './RuledPaper';
 import { ShareIcon, TrashIcon } from '../icons';
 import { Note } from '../state/types';
-import { colors, fonts, radii } from '../theme/tokens';
+import { colors, fonts, radii, shadows } from '../theme/tokens';
 
 const COLUMN_COUNT = 2;
 const COLUMN_GAP = 12;
@@ -69,21 +70,24 @@ function Pin({
       {isPhoto ? (
         <>
           <Image source={{ uri: note.photoUri! }} style={StyleSheet.absoluteFill} resizeMode="cover" />
-          <LinearGradient colors={['transparent', 'rgba(32,31,29,0.72)']} style={styles.pinScrim} pointerEvents="none">
+          <LinearGradient colors={['transparent', colors.scrimDeep]} style={styles.pinScrim} pointerEvents="none">
             <Text style={styles.pinTitlePhoto} numberOfLines={2}>
               {note.title}
             </Text>
           </LinearGradient>
         </>
       ) : (
-        <View style={styles.pinTextInner}>
-          <Text style={styles.pinTitleFlat} numberOfLines={3}>
-            {note.title}
-          </Text>
-          <Text style={styles.pinSnippetFlat} numberOfLines={5}>
-            {note.snippet}
-          </Text>
-        </View>
+        <>
+          <PaperRules />
+          <View style={styles.pinTextInner}>
+            <Text style={styles.pinTitleFlat} numberOfLines={3}>
+              {note.title}
+            </Text>
+            <Text style={styles.pinSnippetFlat} numberOfLines={5}>
+              {note.snippet}
+            </Text>
+          </View>
+        </>
       )}
 
       <View style={styles.pinActions}>
@@ -96,7 +100,7 @@ function Pin({
           accessibilityRole="button"
           accessibilityLabel={`Share "${note.title}"`}
         >
-          <ShareIcon size={13} color={isPhoto ? '#fff' : colors.text} />
+          <ShareIcon size={13} color={isPhoto ? colors.onPhoto : colors.text} />
         </Pressable>
         <Pressable
           onPress={(e) => {
@@ -107,7 +111,7 @@ function Pin({
           accessibilityRole="button"
           accessibilityLabel={`Delete "${note.title}"`}
         >
-          <TrashIcon size={13} color={isPhoto ? '#fff' : colors.text} />
+          <TrashIcon size={13} color={isPhoto ? colors.onPhoto : colors.text} />
         </Pressable>
       </View>
     </Pressable>
@@ -153,10 +157,9 @@ const styles = StyleSheet.create({
   columns: { flexDirection: 'row', gap: COLUMN_GAP },
   column: { flex: 1, gap: COLUMN_GAP },
   pin: {
-    borderRadius: radii.md,
+    borderRadius: radii.paper,
     overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.divider,
+    ...shadows.paper,
   },
   pinScrim: {
     position: 'absolute',
@@ -167,9 +170,11 @@ const styles = StyleSheet.create({
     paddingTop: 28,
     paddingBottom: 10,
   },
-  pinTitlePhoto: { fontFamily: fonts.heading, fontSize: 15, color: '#fff' },
+  pinTitlePhoto: { fontFamily: fonts.heading, fontSize: 15, color: colors.onPhoto },
   pinTextInner: { flex: 1, padding: 12, gap: 6 },
-  pinTitleFlat: { fontFamily: fonts.heading, fontSize: 16, color: colors.text },
+  // Keeps the title clear of the share/delete buttons floating at the pin's top
+  // right — they overlap the text otherwise, on any title long enough to reach.
+  pinTitleFlat: { fontFamily: fonts.heading, fontSize: 16, color: colors.text, paddingRight: 68 },
   pinSnippetFlat: { fontFamily: fonts.body, fontSize: 12.5, lineHeight: 18, color: colors.neutral700 },
   pinActions: {
     position: 'absolute',
@@ -187,9 +192,9 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(243,242,242,0.85)',
+    backgroundColor: colors.paperVeil,
   },
   pinActionBtnOnPhoto: {
-    backgroundColor: 'rgba(32,31,29,0.45)',
+    backgroundColor: colors.scrim,
   },
 });

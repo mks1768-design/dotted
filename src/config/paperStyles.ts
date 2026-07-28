@@ -15,13 +15,15 @@ export type PaperStyleConfig = {
   decoration?: PaperDecoration;
 };
 
+// Every stock here is paper, so they all sit on `surface`-and-lighter tones —
+// never on `bg`, which is the desk the paper rests on.
 export const paperStyles: PaperStyleConfig[] = [
-  { id: 'bg', label: 'Plain', swatchColor: colors.bg },
+  { id: 'bg', label: 'Plain', swatchColor: colors.surface },
   { id: 'accent', label: 'Warm', swatchColor: colors.accent100 },
   { id: 'neutral', label: 'Stone', swatchColor: colors.neutral200 },
   { id: 'cream', label: 'Cream', swatchColor: colors.neutral100 },
-  { id: 'dotQuiet', label: 'Quiet dot', swatchColor: colors.bg, decoration: 'dot' },
-  { id: 'dotScatter', label: 'Scattered dots', swatchColor: colors.bg, decoration: 'scatter' },
+  { id: 'dotQuiet', label: 'Quiet dot', swatchColor: colors.surface, decoration: 'dot' },
+  { id: 'dotScatter', label: 'Scattered dots', swatchColor: colors.surface, decoration: 'scatter' },
   { id: 'photo', label: 'Photo', swatchColor: colors.neutral200, isPhoto: true },
 ];
 

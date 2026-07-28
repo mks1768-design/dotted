@@ -97,7 +97,7 @@ export function ChevronRightIcon({ size = 16, color = colors.neutral700 }: IconP
   );
 }
 
-export function PlusIcon({ size = 24, color = colors.bg }: IconProps) {
+export function PlusIcon({ size = 24, color = colors.surface }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Line x1="12" y1="5" x2="12" y2="19" />
@@ -115,7 +115,7 @@ export function CloseIcon({ size = 15, color = colors.text }: IconProps) {
   );
 }
 
-export function EditIcon({ size = 16, color = colors.bg }: IconProps) {
+export function EditIcon({ size = 16, color = colors.surface }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M12 20h9" />
@@ -143,7 +143,7 @@ export function LockIcon({ size = 16, color = colors.text }: IconProps) {
   );
 }
 
-export function BookIcon({ size = 16, color = colors.bg }: IconProps) {
+export function BookIcon({ size = 16, color = colors.surface }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
@@ -152,7 +152,7 @@ export function BookIcon({ size = 16, color = colors.bg }: IconProps) {
   );
 }
 
-export function CameraBadgeIcon({ size = 17, color = colors.bg }: IconProps) {
+export function CameraBadgeIcon({ size = 17, color = colors.surface }: IconProps) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
       <Rect x="3" y="7" width="18" height="13" rx="2" />

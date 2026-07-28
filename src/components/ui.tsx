@@ -1,5 +1,6 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { PaperRules } from './RuledPaper';
 import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 export function Hr({ style }: { style?: ViewStyle }) {
@@ -59,17 +60,17 @@ export function Button({
       ]}
     >
       {loading ? (
-        <ActivityIndicator size="small" color={variant === 'primary' || variant === 'destructive' ? colors.bg : colors.text} />
+        <ActivityIndicator size="small" color={variant === 'primary' || variant === 'destructive' ? colors.surface : colors.text} />
       ) : (
         <>
           {icon}
           <Text
             style={[
               styles.btnText,
-              variant === 'primary' && { color: colors.bg },
+              variant === 'primary' && { color: colors.surface },
               variant === 'secondary' && { color: colors.text },
               variant === 'ghost' && { color: colors.neutral700 },
-              variant === 'destructive' && { color: colors.bg },
+              variant === 'destructive' && { color: colors.surface },
             ]}
           >
             {title}
@@ -111,17 +112,20 @@ export function SegmentedControl<T extends string>({
   );
 }
 
+/** A note as a sheet of paper on the desk: paper stock, printed rules, and a
+ * lift shadow. `PaperRules` renders first so the content sits over the lines. */
 export function Card({ children, onPress, style }: { children: React.ReactNode; onPress?: () => void; style?: ViewStyle }) {
   return (
     <Pressable
       onPress={onPress}
       style={({ pressed, hovered }: any) => [
         styles.card,
-        hovered && { borderColor: colors.accent300 },
-        pressed && { transform: [{ scale: 0.98 }] },
+        hovered && { backgroundColor: colors.neutral100 },
+        pressed && { backgroundColor: colors.neutral100, transform: [{ scale: 0.985 }] },
         style,
       ]}
     >
+      <PaperRules />
       {children}
     </Pressable>
   );
@@ -202,15 +206,14 @@ const styles = StyleSheet.create({
     color: colors.neutral700,
   },
   segOptTextActive: {
-    color: colors.bg,
+    color: colors.surface,
   },
   card: {
-    borderWidth: 1,
-    borderColor: colors.divider,
-    borderRadius: radii.md,
+    borderRadius: radii.paper,
     padding: 16,
     backgroundColor: colors.surface,
+    overflow: 'hidden',
     gap: 6,
-    ...shadows.sm,
+    ...shadows.paper,
   },
 });

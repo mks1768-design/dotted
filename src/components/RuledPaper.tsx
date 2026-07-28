@@ -2,9 +2,26 @@ import React, { useState } from 'react';
 import { LayoutChangeEvent, StyleSheet, View } from 'react-native';
 import Svg, { Circle } from 'react-native-svg';
 import { PaperDecoration } from '../config/paperStyles';
-import { colors } from '../theme/tokens';
+import { colors, paperRuleGap } from '../theme/tokens';
 
 const LINE_GAP = 26;
+
+/** The ruled lines alone, to lay inside any paper-stock surface (home rows,
+ * note cards, board pins). Sizes itself to its parent and never takes touches,
+ * so whatever is rendered after it stays interactive and sits on top. */
+export function PaperRules({ gap = paperRuleGap }: { gap?: number }) {
+  const [height, setHeight] = useState(0);
+  const onLayout = (e: LayoutChangeEvent) => setHeight(e.nativeEvent.layout.height);
+  const count = Math.max(0, Math.ceil(height / gap) - 1);
+
+  return (
+    <View style={[StyleSheet.absoluteFill, { pointerEvents: 'none' }]} onLayout={onLayout}>
+      {Array.from({ length: count }).map((_, i) => (
+        <View key={i} style={[styles.paperRule, { top: (i + 1) * gap }]} />
+      ))}
+    </View>
+  );
+}
 
 /** Notebook-style horizontal rules behind the editor's flat-color body text,
  * with an optional dot-character watermark for the character paper styles. */
@@ -56,5 +73,12 @@ const styles = StyleSheet.create({
     right: 0,
     height: StyleSheet.hairlineWidth,
     backgroundColor: colors.divider,
+  },
+  paperRule: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.paperRule,
   },
 });
