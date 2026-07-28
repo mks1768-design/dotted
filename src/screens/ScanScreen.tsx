@@ -3,7 +3,7 @@ import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-nati
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button, Hr, SegmentedControl } from '../components/ui';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
-import { CameraBadgeIcon, CheckIcon, ChevronLeftIcon, CopyIcon, DotMagnifierHero } from '../icons';
+import { CameraBadgeIcon, CheckIcon, ChevronLeftIcon, CopyIcon, DotMagnifierHero, ViewfinderIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii } from '../theme/tokens';
 
@@ -38,7 +38,10 @@ export function ScanScreen() {
           {state.scanImageUri ? (
             <Image source={{ uri: state.scanImageUri }} style={StyleSheet.absoluteFill} resizeMode="cover" />
           ) : (
-            <Text style={styles.viewfinderText}>Point the camera at a page</Text>
+            <View style={styles.viewfinderEmpty}>
+              <ViewfinderIcon size={52} />
+              <Text style={styles.viewfinderText}>Point the camera at a page</Text>
+            </View>
           )}
         </View>
 
@@ -107,6 +110,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: colors.neutral200,
   },
+  viewfinderEmpty: { alignItems: 'center', gap: 10 },
   viewfinderText: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700 },
   kicker: { fontFamily: fonts.body, fontSize: 12, color: colors.neutral700, marginBottom: 6 },
   extractedText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.text },

@@ -192,7 +192,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
   },
   segOptActive: {
-    backgroundColor: colors.text,
+    backgroundColor: colors.accent700,
   },
   segOptText: {
     fontFamily: fonts.body,

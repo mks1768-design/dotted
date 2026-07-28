@@ -261,6 +261,19 @@ export function DotMagnifierHero({ size = 96, color = colors.text, bgColor = col
   );
 }
 
+/** Viewfinder placeholder: four corner brackets framing the dot as the lens center. */
+export function ViewfinderIcon({ size = 56, color = colors.neutral700, dotColor = colors.text }: IconProps & { dotColor?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 56 56" fill="none" stroke={color} strokeWidth={2.4} strokeLinecap="round">
+      <Path d="M4 16 V6 a2 2 0 0 1 2-2 H16" />
+      <Path d="M40 4 H50 a2 2 0 0 1 2 2 V16" />
+      <Path d="M52 40 V50 a2 2 0 0 1-2 2 H40" />
+      <Path d="M16 52 H6 a2 2 0 0 1-2-2 V40" />
+      <Circle cx="28" cy="28" r="5" fill={dotColor} stroke="none" />
+    </Svg>
+  );
+}
+
 /** Empty-notes-list illustration: bookshelf with a jumping dot. */
 export function BookshelfEmptyIcon({ size = 84, color = colors.text, bgColor = colors.bg, dividerColor = colors.divider }: IconProps & { dividerColor?: string }) {
   const h = (size / 84) * 56;
