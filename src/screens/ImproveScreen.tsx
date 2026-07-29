@@ -1,13 +1,13 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Hr, SegmentedControl } from '../components/ui';
+import { Button, Hr, SegmentedControl, useFocusRing } from '../components/ui';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
 import { ChevronLeftIcon, DotRewriteHero } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { rewriteFor } from '../state/rewrite';
 import { Tone } from '../state/types';
-import { colors, fonts, fontSizes } from '../theme/tokens';
+import { colors, focusRing, fonts, fontSizes } from '../theme/tokens';
 
 const toneOptions: { label: string; value: Tone }[] = [
   { label: 'Polish', value: 'polish' },
@@ -28,6 +28,7 @@ export function ImproveScreen() {
     applyRewrite,
   } = useNotes();
   const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
+  const prompt = useFocusRing();
 
   const hasDraft = !!state.draftBody.trim();
   const hasPrompt = !!state.improvePrompt.trim();
@@ -64,7 +65,8 @@ export function ImproveScreen() {
             placeholder="e.g. “make it punchier”, “write it like a product update”…"
             placeholderTextColor={colors.neutral700}
             multiline
-            style={styles.promptInput}
+            style={[styles.promptInput, prompt.focused && styles.promptInputFocused, prompt.focused && focusRing]}
+            {...prompt.handlers}
           />
           {hasPrompt && <Text style={styles.promptHint}>Using your instruction instead of the tone above.</Text>}
         </View>
@@ -129,6 +131,7 @@ const styles = StyleSheet.create({
     textAlignVertical: 'top',
     outlineWidth: 0,
   },
+  promptInputFocused: { borderColor: colors.accent700 },
   promptHint: { fontFamily: fonts.body, fontSize: 12, color: colors.accent700, marginTop: 6 },
   originalText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
   suggestionText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },

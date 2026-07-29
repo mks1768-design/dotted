@@ -7,6 +7,16 @@ export function Hr({ style }: { style?: ViewStyle }) {
   return <View style={[styles.hr, style]} />;
 }
 
+/** Tracks whether a field has focus, so the surface around it can show a ring.
+ * Spread the handlers onto the TextInput and style on `focused`. */
+export function useFocusRing() {
+  const [focused, setFocused] = React.useState(false);
+  return {
+    focused,
+    handlers: { onFocus: () => setFocused(true), onBlur: () => setFocused(false) },
+  };
+}
+
 export function Tag({
   label,
   variant = 'outline',

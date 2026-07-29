@@ -89,6 +89,17 @@ export const radii = {
 /** Vertical rhythm of the ruled lines printed on paper surfaces. */
 export const paperRuleGap = 22;
 
+/** Focus indication, required by WCAG 2.4.7. Drawn as an outline rather than a
+ * border so showing it can never shift the layout underneath. Web-only — on
+ * native, focus is carried by the caret and the keyboard appearing — so anything
+ * using this should also change a border colour to cover both. */
+export const focusRing = {
+  outlineColor: colors.accent700,
+  outlineStyle: 'solid' as const,
+  outlineWidth: 2,
+  outlineOffset: 2,
+};
+
 export const shadows = {
   sm: {
     shadowColor: '#241f19',

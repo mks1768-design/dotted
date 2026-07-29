@@ -3,13 +3,13 @@ import React, { useState } from 'react';
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { ConfirmDialog } from '../components/ConfirmDialog';
-import { Button, Hr, SegmentedControl } from '../components/ui';
+import { Button, Hr, SegmentedControl, useFocusRing } from '../components/ui';
 import { RuledPaper } from '../components/RuledPaper';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
 import { paperDecorationFor, paperStyleFor } from '../config/paperStyles';
 import { ChevronLeftIcon, ChevronRightIcon, CloseIcon, EditIcon, PhotoIcon, TrashIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
+import { colors, focusRing, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 export function EditorScreen() {
   const {
@@ -30,6 +30,9 @@ export function EditorScreen() {
   } = useNotes();
 
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const title = useFocusRing();
+  const body = useFocusRing();
+  const photoBody = useFocusRing();
   const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
   const isPhoto = state.draftColor === 'photo';
   const currentPaper = paperStyleFor(state.draftColor);
@@ -77,8 +80,9 @@ export function EditorScreen() {
           placeholder="Untitled"
           placeholderTextColor={colors.neutral700}
           style={styles.titleInput}
+          {...title.handlers}
         />
-        <Hr />
+        <Hr style={title.focused ? styles.titleRuleFocused : undefined} />
 
         {isPhoto ? (
           <View style={styles.photoArea}>
@@ -102,7 +106,8 @@ export function EditorScreen() {
                       placeholder="Start writing…"
                       placeholderTextColor={colors.neutral700}
                       multiline
-                      style={styles.photoTextInput}
+                      style={[styles.photoTextInput, photoBody.focused && focusRing]}
+                      {...photoBody.handlers}
                     />
                     <Button title="Done" onPress={stopEditingPhoto} style={styles.photoDoneBtn} />
                   </>
@@ -122,7 +127,7 @@ export function EditorScreen() {
             )}
           </View>
         ) : (
-          <View style={styles.flatBody}>
+          <View style={[styles.flatBody, body.focused && styles.flatBodyFocused, body.focused && focusRing]}>
             <RuledPaper tint={currentPaper.swatchColor} decoration={paperDecorationFor(state.draftColor)} />
             <TextInput
               value={state.draftBody}
@@ -131,6 +136,7 @@ export function EditorScreen() {
               placeholderTextColor={colors.neutral700}
               multiline
               style={styles.flatTextInput}
+              {...body.handlers}
             />
           </View>
         )}
@@ -200,17 +206,24 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     outlineWidth: 0,
   },
+  // The title has no box to ring, so focus is carried by the rule beneath it
+  // thickening and turning accent — the same "you're writing here" signal.
+  titleRuleFocused: { height: 2, backgroundColor: colors.accent700 },
   // The writing surface is itself a sheet on the desk — bottom margin so its
-  // edge is visible rather than running off the screen.
+  // edge is visible rather than running off the screen. The border is always
+  // present so turning it accent on focus never nudges the layout.
   flatBody: {
     flex: 1,
     marginTop: 6,
     marginBottom: 14,
     borderRadius: radii.paper,
+    borderWidth: 1,
+    borderColor: colors.divider,
     overflow: 'hidden',
     position: 'relative',
     ...shadows.paper,
   },
+  flatBodyFocused: { borderColor: colors.accent700 },
   flatTextInput: {
     position: 'absolute',
     top: 0,
@@ -222,7 +235,10 @@ const styles = StyleSheet.create({
     lineHeight: 26,
     color: colors.text,
     backgroundColor: 'transparent',
-    padding: 0,
+    // Paper has a margin — text jammed against the sheet edge also buries the
+    // caret there, which is exactly what made "where am I typing?" hard to answer.
+    paddingHorizontal: 14,
+    paddingTop: 3,
     textAlignVertical: 'top',
     outlineWidth: 0,
   },

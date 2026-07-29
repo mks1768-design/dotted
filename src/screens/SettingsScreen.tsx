@@ -2,10 +2,10 @@ import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Hr, SegmentedControl } from '../components/ui';
+import { Button, Hr, SegmentedControl, useFocusRing } from '../components/ui';
 import { ChevronLeftIcon, ChevronRightIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { colors, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
+import { colors, focusRing, fonts, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 type SectionId = 'ai' | 'backup';
 
@@ -33,6 +33,7 @@ function AiSection() {
   const { state, setApiKey, clearApiKey, setAiQuality } = useNotes();
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
+  const key = useFocusRing();
   const hasKey = !!state.apiKey;
 
   const onSave = async () => {
@@ -69,7 +70,8 @@ function AiSection() {
           secureTextEntry
           autoCapitalize="none"
           autoCorrect={false}
-          style={[styles.input, { flex: 1 }]}
+          style={[styles.input, { flex: 1 }, key.focused && styles.inputFocused, key.focused && focusRing]}
+          {...key.handlers}
         />
         <Button title="Paste" variant="secondary" onPress={onPaste} />
       </View>
@@ -233,6 +235,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     outlineWidth: 0,
   },
+  inputFocused: { borderColor: colors.accent700 },
   actionsRow: { flexDirection: 'row', gap: 12 },
   helpText: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.neutral700 },
   backupStatus: { fontFamily: fonts.body, fontSize: 13, color: colors.accent700 },
