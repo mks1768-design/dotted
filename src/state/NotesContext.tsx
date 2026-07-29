@@ -46,6 +46,7 @@ type Ctx = {
   applyRewrite: () => Promise<void>;
   backToEditor: () => void;
   capturePage: () => Promise<void>;
+  pickPageFromLibrary: () => Promise<void>;
   copyScan: () => Promise<void>;
   insertScan: () => void;
   setApiKey: (key: string) => Promise<void>;
@@ -200,23 +201,48 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const capturePage = useCallback(async () => {
+  // One scan path, two ways in: straight to the camera (the normal case) or
+  // from the photo library, for a page already photographed or when the camera
+  // isn't available.
+  const scanPage = useCallback(async (fromLibrary: boolean) => {
     const myGeneration = draftGeneration.current;
     dispatch({ type: 'SET_SCAN_LOADING', loading: true });
 
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
-    if (!permission.granted) {
-      if (draftGeneration.current === myGeneration) {
-        dispatch({ type: 'SET_AI_ERROR', error: 'Camera permission was denied.' });
-      }
-      return;
-    }
     const apiKey = stateRef.current.apiKey;
-    const result = await ImagePicker.launchCameraAsync({
-      quality: 0.85,
-      aspect: [4, 3],
-      base64: !!apiKey,
-    });
+    let result: ImagePicker.ImagePickerResult;
+
+    if (fromLibrary) {
+      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (!permission.granted) {
+        if (draftGeneration.current === myGeneration) {
+          dispatch({ type: 'SET_AI_ERROR', error: 'Photo library permission was denied.' });
+        }
+        return;
+      }
+      result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ['images'],
+        quality: 0.85,
+        base64: !!apiKey,
+      });
+    } else {
+      const permission = await ImagePicker.requestCameraPermissionsAsync();
+      if (!permission.granted) {
+        if (draftGeneration.current === myGeneration) {
+          // Point at the way out rather than dead-ending — the page may already
+          // be a photo in their library.
+          dispatch({
+            type: 'SET_AI_ERROR',
+            error: 'Camera permission was denied — you can pick an existing photo instead.',
+          });
+        }
+        return;
+      }
+      result = await ImagePicker.launchCameraAsync({
+        quality: 0.85,
+        aspect: [4, 3],
+        base64: !!apiKey,
+      });
+    }
     if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
 
     const asset = result.canceled ? null : (result.assets?.[0] ?? null);
@@ -253,6 +279,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       dispatch({ type: 'SET_AI_ERROR', error: err instanceof Error ? err.message : 'Scan failed.' });
     }
   }, []);
+
+  const capturePage = useCallback(() => scanPage(false), [scanPage]);
+  const pickPageFromLibrary = useCallback(() => scanPage(true), [scanPage]);
 
   const copyScan = useCallback(async () => {
     await Clipboard.setStringAsync(state.extractedText).catch(() => {});
@@ -333,6 +362,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       applyRewrite,
       backToEditor: () => dispatch({ type: 'BACK_TO_EDITOR' }),
       capturePage,
+      pickPageFromLibrary,
       copyScan,
       insertScan: () => dispatch({ type: 'INSERT_SCAN' }),
       setApiKey,
@@ -353,6 +383,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       pickPhoto,
       applyRewrite,
       capturePage,
+      pickPageFromLibrary,
       copyScan,
       setApiKey,
       clearApiKey,

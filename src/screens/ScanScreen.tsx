@@ -8,7 +8,8 @@ import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii } from '../theme/tokens';
 
 export function ScanScreen() {
-  const { state, backToHome, switchWrite, switchImprove, switchScan, capturePage, copyScan, insertScan } = useNotes();
+  const { state, backToHome, switchWrite, switchImprove, switchScan, capturePage, pickPageFromLibrary, copyScan, insertScan } =
+    useNotes();
   const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
 
   return (
@@ -52,6 +53,13 @@ export function ScanScreen() {
               onPress={capturePage}
               disabled={state.scanLoading}
               loading={state.scanLoading}
+              block
+            />
+            <Button
+              title="Choose an existing photo"
+              variant="secondary"
+              onPress={pickPageFromLibrary}
+              disabled={state.scanLoading}
               block
             />
             {state.aiError && <Text style={styles.errorText}>{state.aiError}</Text>}
