@@ -1,5 +1,6 @@
 import React from 'react';
 import { ScreenTransition } from './components/ScreenTransition';
+import { ApiKeyGuideScreen } from './screens/ApiKeyGuideScreen';
 import { EditorScreen } from './screens/EditorScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
@@ -40,6 +41,8 @@ export function RootView() {
         return <ScanScreen />;
       case 'settings':
         return <SettingsScreen />;
+      case 'apiKeyGuide':
+        return <ApiKeyGuideScreen />;
       case 'paperPicker':
         return <PaperPickerScreen />;
       default:

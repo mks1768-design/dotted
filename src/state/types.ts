@@ -20,6 +20,9 @@ export type AppState = {
   hydrated: boolean;
   hasOnboarded: boolean;
   screen: ScreenName;
+  // The AI setup guide is reachable from Settings, Improve, and Scan, so its
+  // back button has to return wherever the reader actually came from.
+  guideReturnTo: ScreenName | null;
   notes: Note[];
   editingId: string | null;
 

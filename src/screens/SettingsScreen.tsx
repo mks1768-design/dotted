@@ -30,7 +30,7 @@ function SectionHeader({ title, subtitle, expanded, onPress }: { title: string; 
 }
 
 function AiSection() {
-  const { state, setApiKey, clearApiKey, setAiQuality } = useNotes();
+  const { state, setApiKey, clearApiKey, setAiQuality, goApiKeyGuide } = useNotes();
   const [draft, setDraft] = useState('');
   const [saving, setSaving] = useState(false);
   const key = useFocusRing();
@@ -58,8 +58,12 @@ function AiSection() {
     <View style={styles.sectionBody}>
       <View>
         <Text style={styles.kicker}>Anthropic API key</Text>
-        <Text style={styles.status}>{hasKey ? 'Connected — Improve and Scan use real AI.' : 'Not set — Improve and Scan use placeholder text.'}</Text>
+        <Text style={styles.status}>
+          {hasKey ? 'Connected — Improve and Scan are ready.' : 'Not set — Improve and Scan are turned off until you add a key.'}
+        </Text>
       </View>
+
+      {!hasKey && <Button title="How do I get a key?" variant="secondary" onPress={goApiKeyGuide} block />}
 
       <View style={styles.inputRow}>
         <TextInput
@@ -86,23 +90,31 @@ function AiSection() {
         local storage on web) and is sent straight from this app to Anthropic — dotted has no server of its own.
       </Text>
 
-      <Hr style={{ marginVertical: 4 }} />
+      {hasKey && <Button title="Read the setup guide" variant="ghost" onPress={goApiKeyGuide} block />}
 
-      <View>
-        <Text style={styles.kicker}>AI quality</Text>
-        <Text style={styles.status}>
-          High uses a stronger model for Improve and Scan — noticeably better results, at a higher cost per
-          request on your own API key.
-        </Text>
-      </View>
-      <SegmentedControl
-        value={state.aiQuality}
-        onChange={setAiQuality}
-        options={[
-          { label: 'Standard', value: 'standard' },
-          { label: 'High', value: 'high' },
-        ]}
-      />
+      {/* Nothing to tune until there's a key to spend — showing the choice
+          first only buries the one thing this screen is for. */}
+      {hasKey && (
+        <>
+          <Hr style={{ marginVertical: 4 }} />
+
+          <View>
+            <Text style={styles.kicker}>AI quality</Text>
+            <Text style={styles.status}>
+              High uses a stronger model for Improve and Scan — noticeably better results, at a higher cost per
+              request on your own API key.
+            </Text>
+          </View>
+          <SegmentedControl
+            value={state.aiQuality}
+            onChange={setAiQuality}
+            options={[
+              { label: 'Standard', value: 'standard' },
+              { label: 'High', value: 'high' },
+            ]}
+          />
+        </>
+      )}
     </View>
   );
 }

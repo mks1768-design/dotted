@@ -20,13 +20,19 @@ export const onboardingPages: OnboardingPage[] = [
   {
     id: 'actions',
     icon: DotPencilIcon,
-    title: 'Four things, one dot',
-    body: 'Write it, ask AI to Improve it, Explanation to scan a page, Store to browse it all later.',
+    title: 'Write, then find it again',
+    body: 'Plain notes, photo notes, paper you pick. Store keeps them all — as a list, or as a board you can look across.',
   },
   {
     id: 'local',
     icon: DotSparklesIcon,
     title: 'Local, and yours',
-    body: "Everything stays on this device — no account, no server. Back it up anytime from Settings.",
+    body: 'Everything stays on this device — no account, no server. Back it up anytime from Settings.',
+  },
+  {
+    id: 'ai',
+    icon: DotSparklesIcon,
+    title: 'AI, if you want it',
+    body: "Improve rewrites a note; Explanation reads a photographed page. Both run on an Anthropic key you add yourself — optional, and everything above works without one.",
   },
 ];

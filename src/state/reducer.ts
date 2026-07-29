@@ -8,6 +8,7 @@ export const initialState: AppState = {
   hydrated: false,
   hasOnboarded: false,
   screen: 'splash',
+  guideReturnTo: null,
   notes: [],
   editingId: null,
 
@@ -58,6 +59,8 @@ export type Action =
   | { type: 'GO_HOME' }
   | { type: 'GO_NOTES_LIST' }
   | { type: 'GO_SETTINGS' }
+  | { type: 'GO_API_KEY_GUIDE' }
+  | { type: 'CLOSE_API_KEY_GUIDE' }
   | { type: 'NEW_NOTE' }
   | { type: 'OPEN_NOTE'; note: Note }
   | { type: 'STORE_NOTE' }
@@ -116,13 +119,21 @@ export function reducer(state: AppState, action: Action): AppState {
       return state.screen === 'splash' ? { ...state, screen: state.hasOnboarded ? 'home' : 'onboarding' } : state;
 
     case 'GO_HOME':
-      return { ...state, screen: 'home', aiError: null };
+      return { ...state, screen: 'home', aiError: null, guideReturnTo: null };
 
     case 'GO_NOTES_LIST':
-      return { ...state, screen: 'library', aiError: null };
+      return { ...state, screen: 'library', aiError: null, guideReturnTo: null };
 
     case 'GO_SETTINGS':
       return { ...state, screen: 'settings' };
+
+    case 'GO_API_KEY_GUIDE':
+      // Remember the caller so the guide's back button doesn't strand someone
+      // who opened it mid-way through writing a note.
+      return { ...state, guideReturnTo: state.screen, screen: 'apiKeyGuide' };
+
+    case 'CLOSE_API_KEY_GUIDE':
+      return { ...state, screen: state.guideReturnTo ?? 'settings', guideReturnTo: null };
 
     case 'NEW_NOTE':
       return { ...state, ...blankDraft, screen: 'editor' };

@@ -1,11 +1,11 @@
 import React from 'react';
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { AiSetupNotice } from '../components/AiSetupNotice';
 import { Button, Hr, SegmentedControl, useFocusRing } from '../components/ui';
 import { noteKindOrder, noteKinds } from '../config/noteKinds';
 import { ChevronLeftIcon, DotRewriteHero } from '../icons';
 import { useNotes } from '../state/NotesContext';
-import { rewriteFor } from '../state/rewrite';
 import { Tone } from '../state/types';
 import { colors, focusRing, fonts, fontSizes } from '../theme/tokens';
 
@@ -34,7 +34,6 @@ export function ImproveScreen() {
   const hasPrompt = !!state.improvePrompt.trim();
   const hasKey = !!state.apiKey;
   const originalText = hasDraft ? state.draftBody : 'Nothing written yet — go to Write and add some text first.';
-  const referencePreview = rewriteFor(state.tone, state.draftBody, state.improvePrompt);
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -55,56 +54,61 @@ export function ImproveScreen() {
           onChange={(kind) => kindHandlers[kind]()}
           options={noteKindOrder.map((k) => ({ label: noteKinds[k].segmentLabel, value: k }))}
         />
-        <SegmentedControl value={state.tone} onChange={setTone} options={toneOptions} disabled={hasPrompt} />
-
-        <View>
-          <Text style={styles.kicker}>Or describe how</Text>
-          <TextInput
-            value={state.improvePrompt}
-            onChangeText={setImprovePrompt}
-            placeholder="e.g. “make it punchier”, “write it like a product update”…"
-            placeholderTextColor={colors.neutral700}
-            multiline
-            style={[styles.promptInput, prompt.focused && styles.promptInputFocused, prompt.focused && focusRing]}
-            {...prompt.handlers}
-          />
-          {hasPrompt && <Text style={styles.promptHint}>Using your instruction instead of the tone above.</Text>}
-        </View>
-
-        <View>
-          <Text style={styles.kicker}>Original</Text>
-          <Text style={styles.originalText}>{originalText}</Text>
-        </View>
-        <Hr />
 
         {hasKey ? (
-          hasDraft && (
-            <Text style={styles.aiHint}>
-              {state.rewriteLoading ? 'Claude is rewriting your note…' : 'Tap Apply to rewrite this note with Claude.'}
-            </Text>
-          )
-        ) : (
-          hasDraft && (
+          <>
+            <SegmentedControl value={state.tone} onChange={setTone} options={toneOptions} disabled={hasPrompt} />
+
             <View>
-              <Text style={styles.kicker}>Suggestion (reference preview — add an API key in Settings for real AI)</Text>
-              <Text style={styles.suggestionText}>{referencePreview}</Text>
+              <Text style={styles.kicker}>Or describe how</Text>
+              <TextInput
+                value={state.improvePrompt}
+                onChangeText={setImprovePrompt}
+                placeholder="e.g. “make it punchier”, “write it like a product update”…"
+                placeholderTextColor={colors.neutral700}
+                multiline
+                style={[styles.promptInput, prompt.focused && styles.promptInputFocused, prompt.focused && focusRing]}
+                {...prompt.handlers}
+              />
+              {hasPrompt && <Text style={styles.promptHint}>Using your instruction instead of the tone above.</Text>}
             </View>
-          )
+
+            <View>
+              <Text style={styles.kicker}>Original</Text>
+              <Text style={styles.originalText}>{originalText}</Text>
+            </View>
+            <Hr />
+
+            {hasDraft && (
+              <Text style={styles.aiHint}>
+                {state.rewriteLoading ? 'Claude is rewriting your note…' : 'Tap Apply to rewrite this note with Claude.'}
+              </Text>
+            )}
+          </>
+        ) : (
+          <AiSetupNotice feature="improve" />
         )}
 
         {state.aiError && <Text style={styles.errorText}>{state.aiError}</Text>}
       </ScrollView>
 
       <View style={styles.footer}>
-        <Button title="Discard" variant="ghost" onPress={backToEditor} style={{ flex: 1 }} />
         <Button
-          title="Apply"
-          variant="primary"
-          onPress={applyRewrite}
-          disabled={!hasDraft || state.rewriteLoading}
-          loading={state.rewriteLoading}
+          title={hasKey ? 'Discard' : 'Back to note'}
+          variant="ghost"
+          onPress={backToEditor}
           style={{ flex: 1 }}
         />
+        {hasKey && (
+          <Button
+            title="Apply"
+            variant="primary"
+            onPress={applyRewrite}
+            disabled={!hasDraft || state.rewriteLoading}
+            loading={state.rewriteLoading}
+            style={{ flex: 1 }}
+          />
+        )}
       </View>
     </SafeAreaView>
   );
@@ -134,7 +138,6 @@ const styles = StyleSheet.create({
   promptInputFocused: { borderColor: colors.accent700 },
   promptHint: { fontFamily: fonts.body, fontSize: 12, color: colors.accent700, marginTop: 6 },
   originalText: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
-  suggestionText: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },
   aiHint: { fontFamily: fonts.body, fontSize: 14, color: colors.neutral700, fontStyle: 'italic' },
   errorText: { fontFamily: fonts.body, fontSize: 13, color: colors.danger },
   footer: { flexDirection: 'row', gap: 12, paddingHorizontal: 20, paddingTop: 14, paddingBottom: 28 },

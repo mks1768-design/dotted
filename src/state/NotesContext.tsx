@@ -10,7 +10,6 @@ import { exportBackup, importBackup } from '../services/backup';
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secureStorage';
 import { generateId } from './id';
 import { initialState, reducer } from './reducer';
-import { rewriteFor } from './rewrite';
 import { AiQuality, AppState, Note, Tone } from './types';
 
 const STORAGE_KEY = '@dotted/notes';
@@ -27,6 +26,8 @@ type Ctx = {
   backToHome: () => void;
   goNotesList: () => void;
   goSettings: () => void;
+  goApiKeyGuide: () => void;
+  closeApiKeyGuide: () => void;
   newNote: () => void;
   openNote: (note: Note) => void;
   storeNote: () => void;
@@ -205,10 +206,17 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
   // from the photo library, for a page already photographed or when the camera
   // isn't available.
   const scanPage = useCallback(async (fromLibrary: boolean) => {
+    const apiKey = stateRef.current.apiKey;
+    // Checked before the camera opens: without a key there is nothing to send,
+    // so asking for a photo first would waste the shot.
+    if (!apiKey) {
+      dispatch({ type: 'SET_AI_ERROR', error: 'Add an Anthropic API key in Settings to read a page.' });
+      return;
+    }
+
     const myGeneration = draftGeneration.current;
     dispatch({ type: 'SET_SCAN_LOADING', loading: true });
 
-    const apiKey = stateRef.current.apiKey;
     let result: ImagePicker.ImagePickerResult;
 
     if (fromLibrary) {
@@ -222,7 +230,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ['images'],
         quality: 0.85,
-        base64: !!apiKey,
+        base64: true,
       });
     } else {
       const permission = await ImagePicker.requestCameraPermissionsAsync();
@@ -240,24 +248,13 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       result = await ImagePicker.launchCameraAsync({
         quality: 0.85,
         aspect: [4, 3],
-        base64: !!apiKey,
+        base64: true,
       });
     }
     if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
 
     const asset = result.canceled ? null : (result.assets?.[0] ?? null);
     if (asset) dispatch({ type: 'SET_SCAN_IMAGE', uri: asset.uri });
-
-    if (!apiKey) {
-      // Reference mode has nothing to send anywhere, so it doesn't require a
-      // real photo — it mirrors the design prototype's placeholder behavior.
-      dispatch({
-        type: 'SCAN_PAGE',
-        extractedText: 'Extracted text will appear here once you add an API key in Settings.',
-        explainedText: 'Add an Anthropic API key in Settings to get a real explanation of the page.',
-      });
-      return;
-    }
 
     if (!asset) {
       dispatch({ type: 'SET_SCAN_LOADING', loading: false }); // user canceled — nothing to send to the API
@@ -292,8 +289,11 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
 
   const applyRewrite = useCallback(async () => {
     const { apiKey, tone, draftBody, improvePrompt } = stateRef.current;
+    // The screen hides Apply without a key; this is the backstop so no path
+    // can reach the old behaviour of returning the note unchanged as if it
+    // had been rewritten.
     if (!apiKey) {
-      dispatch({ type: 'APPLY_REWRITE', rewritten: rewriteFor(tone, draftBody, improvePrompt) });
+      dispatch({ type: 'SET_AI_ERROR', error: 'Add an Anthropic API key in Settings to rewrite a note.' });
       return;
     }
     const myGeneration = draftGeneration.current;
@@ -343,6 +343,8 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       backToHome: () => dispatch({ type: 'GO_HOME' }),
       goNotesList: () => dispatch({ type: 'GO_NOTES_LIST' }),
       goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
+      goApiKeyGuide: () => dispatch({ type: 'GO_API_KEY_GUIDE' }),
+      closeApiKeyGuide: () => dispatch({ type: 'CLOSE_API_KEY_GUIDE' }),
       newNote,
       openNote,
       storeNote: () => dispatch({ type: 'STORE_NOTE' }),
