@@ -61,7 +61,13 @@ export function PaperPickerScreen() {
         style={styles.pager}
       >
         {paperStyles.map((p) => (
-          <Pressable key={p.id} style={[styles.page, { width, height }]} onPress={() => choose(p.id)}>
+          <Pressable
+            key={p.id}
+            style={[styles.page, { width, height }]}
+            onPress={() => choose(p.id)}
+            accessibilityRole="button"
+            accessibilityLabel={`Use ${p.label} paper`}
+          >
             {p.isPhoto ? (
               <View style={[StyleSheet.absoluteFill, styles.photoPreview]}>
                 <PhotoIcon size={32} color={colors.neutral700} />

@@ -7,13 +7,14 @@
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
     "ios": {
+      "bundleIdentifier": "com.mks1768.dotted",
       "supportsTablet": true
     },
     "android": {
       "package": "com.mks1768.dotted",
       "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#f3f2f2",
+        "backgroundColor": "#e9e3da",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -24,6 +25,15 @@
       "favicon": "./assets/favicon.png"
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/splash-icon.png",
+          "imageWidth": 132,
+          "resizeMode": "contain",
+          "backgroundColor": "#e9e3da"
+        }
+      ],
       [
         "expo-image-picker",
         {

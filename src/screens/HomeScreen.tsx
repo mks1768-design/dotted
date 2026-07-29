@@ -40,6 +40,8 @@ export function HomeScreen() {
             <Pressable
               key={item.id}
               onPress={actionFor(item)}
+              accessibilityRole="button"
+              accessibilityLabel={item.label}
               style={({ pressed, hovered }: any) => [
                 styles.row,
                 hovered && styles.rowHovered,

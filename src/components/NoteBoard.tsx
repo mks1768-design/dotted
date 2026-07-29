@@ -55,16 +55,17 @@ function Pin({
 }) {
   const isPhoto = note.color === 'photo' && !!note.photoUri;
   const height = estimatePinHeight(note);
+  const [active, setActive] = React.useState(false);
 
+  // Plain View with the whole-pin tap laid over the content, so the share and
+  // delete buttons aren't nested inside another button.
   return (
-    <Pressable
-      onPress={onOpen}
-      style={({ pressed, hovered }: any) => [
+    <View
+      style={[
         styles.pin,
         { height },
         !isPhoto && { backgroundColor: paperBackgroundColor(note.color) },
-        hovered && { transform: [{ scale: 1.015 }] },
-        pressed && { transform: [{ scale: 0.98 }] },
+        active && { transform: [{ scale: 1.015 }] },
       ]}
     >
       {isPhoto ? (
@@ -90,12 +91,20 @@ function Pin({
         </>
       )}
 
+      <Pressable
+        onPress={onOpen}
+        onPressIn={() => setActive(true)}
+        onPressOut={() => setActive(false)}
+        onHoverIn={() => setActive(true)}
+        onHoverOut={() => setActive(false)}
+        accessibilityRole="button"
+        accessibilityLabel={`Open "${note.title}"`}
+        style={StyleSheet.absoluteFill}
+      />
+
       <View style={styles.pinActions}>
         <Pressable
-          onPress={(e) => {
-            e?.stopPropagation?.();
-            onShare();
-          }}
+          onPress={onShare}
           style={[styles.pinActionBtn, isPhoto && styles.pinActionBtnOnPhoto]}
           accessibilityRole="button"
           accessibilityLabel={`Share "${note.title}"`}
@@ -103,10 +112,7 @@ function Pin({
           <ShareIcon size={13} color={isPhoto ? colors.onPhoto : colors.text} />
         </Pressable>
         <Pressable
-          onPress={(e) => {
-            e?.stopPropagation?.();
-            onDelete();
-          }}
+          onPress={onDelete}
           style={[styles.pinActionBtn, isPhoto && styles.pinActionBtnOnPhoto]}
           accessibilityRole="button"
           accessibilityLabel={`Delete "${note.title}"`}
@@ -114,7 +120,7 @@ function Pin({
           <TrashIcon size={13} color={isPhoto ? colors.onPhoto : colors.text} />
         </Pressable>
       </View>
-    </Pressable>
+    </View>
   );
 }
 

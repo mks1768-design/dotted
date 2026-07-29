@@ -124,20 +124,44 @@ export function SegmentedControl<T extends string>({
 
 /** A note as a sheet of paper on the desk: paper stock, printed rules, and a
  * lift shadow. `PaperRules` renders first so the content sits over the lines. */
-export function Card({ children, onPress, style }: { children: React.ReactNode; onPress?: () => void; style?: ViewStyle }) {
+export function Card({
+  children,
+  onPress,
+  style,
+  accessibilityLabel,
+  actions,
+}: {
+  children: React.ReactNode;
+  onPress?: () => void;
+  style?: ViewStyle;
+  accessibilityLabel?: string;
+  /** Secondary buttons pinned to the card's top right. Rendered above the tap
+   * layer so they stay independently clickable. */
+  actions?: React.ReactNode;
+}) {
+  const [active, setActive] = React.useState(false);
+
+  // The card is a plain View and the whole-card tap is a Pressable laid over the
+  // content. Making the card itself the button would nest `actions`' buttons
+  // inside it, which is invalid HTML and confuses screen readers.
   return (
-    <Pressable
-      onPress={onPress}
-      style={({ pressed, hovered }: any) => [
-        styles.card,
-        hovered && { backgroundColor: colors.neutral100 },
-        pressed && { backgroundColor: colors.neutral100, transform: [{ scale: 0.985 }] },
-        style,
-      ]}
-    >
+    <View style={[styles.card, active && styles.cardActive, style]}>
       <PaperRules />
       {children}
-    </Pressable>
+      {onPress && (
+        <Pressable
+          onPress={onPress}
+          onPressIn={() => setActive(true)}
+          onPressOut={() => setActive(false)}
+          onHoverIn={() => setActive(true)}
+          onHoverOut={() => setActive(false)}
+          accessibilityRole="button"
+          accessibilityLabel={accessibilityLabel}
+          style={StyleSheet.absoluteFill}
+        />
+      )}
+      {actions}
+    </View>
   );
 }
 
@@ -226,4 +250,5 @@ const styles = StyleSheet.create({
     gap: 6,
     ...shadows.paper,
   },
+  cardActive: { backgroundColor: colors.neutral100 },
 });

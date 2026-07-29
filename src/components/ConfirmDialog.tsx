@@ -25,7 +25,7 @@ export function ConfirmDialog({
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onCancel}>
       <View style={styles.backdrop}>
-        <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessibilityLabel="Dismiss" />
+        <Pressable style={StyleSheet.absoluteFill} onPress={onCancel} accessibilityRole="button" accessibilityLabel="Dismiss" />
         <View style={styles.card}>
           <Text style={styles.title}>{title}</Text>
           <Text style={styles.message}>{message}</Text>
@@ -50,7 +50,9 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     maxWidth: 340,
-    backgroundColor: colors.bg,
+    // Paper, not `bg` — the dialog floats above the darkened desk, so taking the
+    // desk's own colour would make it read as a slab of the surface behind it.
+    backgroundColor: colors.surface,
     borderRadius: radii.md,
     padding: 20,
     gap: 14,

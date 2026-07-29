@@ -70,16 +70,14 @@ export function NotesListScreen() {
           keyExtractor={(n) => n.id}
           contentContainerStyle={styles.list}
           renderItem={({ item }: { item: Note }) => (
-            <Card onPress={() => openNote(item)} style={styles.card}>
-              <View style={styles.cardTop}>
-                <Text style={styles.kicker}>{formatNoteDate(item.createdAt)}</Text>
-                <View style={styles.cardTopRight}>
-                  <Tag label={noteKinds[item.kind].label} variant="outline" />
+            <Card
+              onPress={() => openNote(item)}
+              style={styles.card}
+              accessibilityLabel={`Open "${item.title}"`}
+              actions={
+                <View style={styles.cardActions}>
                   <Pressable
-                    onPress={(e) => {
-                      e?.stopPropagation?.();
-                      shareNote(item);
-                    }}
+                    onPress={() => shareNote(item)}
                     style={styles.cardIconBtn}
                     accessibilityRole="button"
                     accessibilityLabel={`Share "${item.title}"`}
@@ -87,10 +85,7 @@ export function NotesListScreen() {
                     <ShareIcon size={14} />
                   </Pressable>
                   <Pressable
-                    onPress={(e) => {
-                      e?.stopPropagation?.();
-                      setPendingDelete(item);
-                    }}
+                    onPress={() => setPendingDelete(item)}
                     style={styles.cardIconBtn}
                     accessibilityRole="button"
                     accessibilityLabel={`Delete "${item.title}"`}
@@ -98,6 +93,11 @@ export function NotesListScreen() {
                     <TrashIcon size={14} />
                   </Pressable>
                 </View>
+              }
+            >
+              <View style={styles.cardTop}>
+                <Text style={styles.kicker}>{formatNoteDate(item.createdAt)}</Text>
+                <Tag label={noteKinds[item.kind].label} variant="outline" />
               </View>
               <Text style={styles.cardTitle} numberOfLines={1}>
                 {item.title}
@@ -181,8 +181,9 @@ const styles = StyleSheet.create({
   hrMargin: { marginHorizontal: 20 },
   list: { padding: 20, paddingBottom: 90, gap: 12 },
   card: { gap: 6 },
-  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardTopRight: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  // Right padding keeps the kind tag clear of the actions floating above it.
+  cardTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 82 },
+  cardActions: { position: 'absolute', top: 8, right: 10, flexDirection: 'row', alignItems: 'center', gap: 6 },
   // 36pt rather than the full 44: these sit side by side, so the boxes have to
   // stay narrow enough not to overlap each other at this gap. Comfortably over
   // the 24pt WCAG 2.5.8 floor, and the whole card is tappable to open the note.
