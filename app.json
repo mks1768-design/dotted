@@ -37,8 +37,14 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "dotted uses your photo library to set a note's background photo.",
-          "cameraPermission": "dotted uses your camera to scan a book or document page."
+          "photosPermission": "dotted uses your photo library to set a note's background photo."
+        }
+      ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "dotted uses your camera to scan a book or document page.",
+          "recordAudioAndroid": false
         }
       ]
     ]

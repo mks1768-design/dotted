@@ -82,6 +82,7 @@ export type Action =
   | { type: 'SET_SCAN_IMAGE'; uri: string }
   | { type: 'SET_SCAN_LOADING'; loading: boolean }
   | { type: 'SCAN_PAGE'; extractedText: string; explainedText: string }
+  | { type: 'RESET_SCAN' }
   | { type: 'SET_COPIED'; copied: boolean }
   | { type: 'SET_AI_ERROR'; error: string | null }
   | { type: 'INSERT_SCAN' }
@@ -246,6 +247,18 @@ export function reducer(state: AppState, action: Action): AppState {
         scanned: true,
         extractedText: action.extractedText,
         explainedText: action.explainedText,
+        scanLoading: false,
+        aiError: null,
+      };
+
+    // Back to a live viewfinder for the next page, without leaving the screen.
+    case 'RESET_SCAN':
+      return {
+        ...state,
+        scanned: false,
+        scanImageUri: null,
+        extractedText: '',
+        explainedText: '',
         scanLoading: false,
         aiError: null,
       };

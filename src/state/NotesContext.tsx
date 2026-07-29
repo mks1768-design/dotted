@@ -46,8 +46,9 @@ type Ctx = {
   setImprovePrompt: (prompt: string) => void;
   applyRewrite: () => Promise<void>;
   backToEditor: () => void;
-  capturePage: () => Promise<void>;
+  readPage: (photo: { uri: string; base64: string; mimeType: string }) => Promise<void>;
   pickPageFromLibrary: () => Promise<void>;
+  rescanPage: () => void;
   copyScan: () => Promise<void>;
   insertScan: () => void;
   setApiKey: (key: string) => Promise<void>;
@@ -202,74 +203,32 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  // One scan path, two ways in: straight to the camera (the normal case) or
-  // from the photo library, for a page already photographed or when the camera
-  // isn't available.
-  const scanPage = useCallback(async (fromLibrary: boolean) => {
+  // expo-camera hands back a data URL on web and bare base64 on Android/iOS.
+  // The API only accepts the bare form, so the prefix has to come off before
+  // it's sent — otherwise scanning works on device and fails on web.
+  const stripDataUrl = (base64: string) => base64.replace(/^data:[^;]+;base64,/, '');
+
+  /** Sends one already-captured page to the API. The photo itself comes from
+   * the inline camera on the Scan screen, or from the photo library below. */
+  const readPage = useCallback(async (photo: { uri: string; base64: string; mimeType: string }) => {
     const apiKey = stateRef.current.apiKey;
-    // Checked before the camera opens: without a key there is nothing to send,
-    // so asking for a photo first would waste the shot.
     if (!apiKey) {
       dispatch({ type: 'SET_AI_ERROR', error: 'Add an Anthropic API key in Settings to read a page.' });
       return;
     }
 
     const myGeneration = draftGeneration.current;
+    dispatch({ type: 'SET_SCAN_IMAGE', uri: photo.uri });
     dispatch({ type: 'SET_SCAN_LOADING', loading: true });
 
-    let result: ImagePicker.ImagePickerResult;
-
-    if (fromLibrary) {
-      const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      if (!permission.granted) {
-        if (draftGeneration.current === myGeneration) {
-          dispatch({ type: 'SET_AI_ERROR', error: 'Photo library permission was denied.' });
-        }
-        return;
-      }
-      result = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ['images'],
-        quality: 0.85,
-        base64: true,
-      });
-    } else {
-      const permission = await ImagePicker.requestCameraPermissionsAsync();
-      if (!permission.granted) {
-        if (draftGeneration.current === myGeneration) {
-          // Point at the way out rather than dead-ending — the page may already
-          // be a photo in their library.
-          dispatch({
-            type: 'SET_AI_ERROR',
-            error: 'Camera permission was denied — you can pick an existing photo instead.',
-          });
-        }
-        return;
-      }
-      result = await ImagePicker.launchCameraAsync({
-        quality: 0.85,
-        aspect: [4, 3],
-        base64: true,
-      });
-    }
-    if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
-
-    const asset = result.canceled ? null : (result.assets?.[0] ?? null);
-    if (asset) dispatch({ type: 'SET_SCAN_IMAGE', uri: asset.uri });
-
-    if (!asset) {
-      dispatch({ type: 'SET_SCAN_LOADING', loading: false }); // user canceled — nothing to send to the API
-      return;
-    }
-
     try {
-      if (!asset.base64) throw new AnthropicError('Could not read the captured photo.');
       const { extractedText, explainedText } = await explainScan(
         apiKey,
-        asset.base64,
-        asset.mimeType || 'image/jpeg',
+        stripDataUrl(photo.base64),
+        photo.mimeType,
         stateRef.current.aiQuality
       );
-      if (draftGeneration.current !== myGeneration) return;
+      if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
       dispatch({ type: 'SCAN_PAGE', extractedText, explainedText });
     } catch (err) {
       if (draftGeneration.current !== myGeneration) return;
@@ -277,8 +236,33 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const capturePage = useCallback(() => scanPage(false), [scanPage]);
-  const pickPageFromLibrary = useCallback(() => scanPage(true), [scanPage]);
+  // The way in for a page that's already a photo, or a device whose camera
+  // can't start.
+  const pickPageFromLibrary = useCallback(async () => {
+    if (!stateRef.current.apiKey) {
+      dispatch({ type: 'SET_AI_ERROR', error: 'Add an Anthropic API key in Settings to read a page.' });
+      return;
+    }
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (!permission.granted) {
+      dispatch({ type: 'SET_AI_ERROR', error: 'Photo library permission was denied.' });
+      return;
+    }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.85,
+      base64: true,
+    });
+    const asset = result.canceled ? null : (result.assets?.[0] ?? null);
+    if (!asset) return; // user backed out of the picker
+    if (!asset.base64) {
+      dispatch({ type: 'SET_AI_ERROR', error: 'Could not read that photo.' });
+      return;
+    }
+    await readPage({ uri: asset.uri, base64: asset.base64, mimeType: asset.mimeType || 'image/jpeg' });
+  }, [readPage]);
+
+  const rescanPage = useCallback(() => dispatch({ type: 'RESET_SCAN' }), []);
 
   const copyScan = useCallback(async () => {
     await Clipboard.setStringAsync(state.extractedText).catch(() => {});
@@ -363,8 +347,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       setImprovePrompt: (prompt) => dispatch({ type: 'SET_IMPROVE_PROMPT', prompt }),
       applyRewrite,
       backToEditor: () => dispatch({ type: 'BACK_TO_EDITOR' }),
-      capturePage,
+      readPage,
       pickPageFromLibrary,
+      rescanPage,
       copyScan,
       insertScan: () => dispatch({ type: 'INSERT_SCAN' }),
       setApiKey,
@@ -384,8 +369,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       openNote,
       pickPhoto,
       applyRewrite,
-      capturePage,
+      readPage,
       pickPageFromLibrary,
+      rescanPage,
       copyScan,
       setApiKey,
       clearApiKey,
