@@ -86,7 +86,7 @@ export function ImproveScreen() {
             )}
           </>
         ) : (
-          <AiSetupNotice feature="improve" />
+          <AiSetupNotice />
         )}
 
         {state.aiError && <Text style={styles.errorText}>{state.aiError}</Text>}

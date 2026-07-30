@@ -10,24 +10,17 @@ import { Button } from './ui';
  * These two screens used to run a fake local transform instead — a capitalize
  * and a full stop dressed up as a rewrite — which read as a bad AI rather than
  * a missing one. Saying plainly that the feature is off, and that the rest of
- * the app isn't, is the honest version of that. */
-export function AiSetupNotice({ feature }: { feature: 'improve' | 'scan' }) {
+ * the app isn't, is the honest version of that. Kept to a couple of short
+ * lines rather than a paragraph, on the theory that a wall of text here just
+ * gets skipped past on the way to tapping something. */
+export function AiSetupNotice() {
   const { goApiKeyGuide, goSettings } = useNotes();
-
-  const line =
-    feature === 'improve'
-      ? 'Improving a note asks Claude to rewrite it, so it needs an Anthropic API key of your own.'
-      : 'Reading a page asks Claude to look at the photo, so it needs an Anthropic API key of your own.';
 
   return (
     <View style={styles.card}>
-      <DotSparklesIcon size={48} />
+      <DotSparklesIcon size={44} />
       <Text style={styles.title}>AI isn't set up yet</Text>
-      <Text style={styles.body}>
-        {line} dotted has no server, so nothing runs until you add one. It takes about five minutes and costs
-        a few cents per use.
-      </Text>
-      <Text style={styles.aside}>Everything else — writing, photos, the board, backup — works without it.</Text>
+      <Text style={styles.body}>Needs your own Anthropic key (a few cents per use) — everything else here works without one.</Text>
       <View style={styles.actions}>
         <Button title="Show me how" onPress={goApiKeyGuide} block />
         <Button title="I already have a key" variant="secondary" onPress={goSettings} block />
@@ -44,10 +37,9 @@ const styles = StyleSheet.create({
     borderColor: colors.divider,
     padding: 20,
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
   },
-  title: { fontFamily: fonts.heading, fontSize: 19, color: colors.text, marginTop: 2 },
-  body: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700, textAlign: 'center' },
-  aside: { fontFamily: fonts.body, fontSize: 13, lineHeight: 20, color: colors.neutral700, textAlign: 'center', fontStyle: 'italic' },
-  actions: { alignSelf: 'stretch', gap: 10, marginTop: 6 },
+  title: { fontFamily: fonts.heading, fontSize: 18, color: colors.text, marginTop: 2 },
+  body: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 20, color: colors.neutral700, textAlign: 'center' },
+  actions: { alignSelf: 'stretch', gap: 10, marginTop: 8 },
 });

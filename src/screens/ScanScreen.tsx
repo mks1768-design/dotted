@@ -134,7 +134,7 @@ export function ScanScreen() {
               onChange={(kind) => kindHandlers[kind]()}
               options={noteKindOrder.map((k) => ({ label: noteKinds[k].segmentLabel, value: k }))}
             />
-            <AiSetupNotice feature="scan" />
+            <AiSetupNotice />
           </>
         ) : (
           <>

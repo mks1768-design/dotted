@@ -2,7 +2,7 @@ import * as Clipboard from 'expo-clipboard';
 import React, { useState } from 'react';
 import { Linking, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Button, Hr } from '../components/ui';
+import { Button } from '../components/ui';
 import { ChevronLeftIcon, DotSparklesIcon } from '../icons';
 import { useNotes } from '../state/NotesContext';
 import { colors, fonts, fontSizes, radii } from '../theme/tokens';
@@ -10,35 +10,20 @@ import { colors, fonts, fontSizes, radii } from '../theme/tokens';
 const CONSOLE_URL = 'https://console.anthropic.com';
 const COPIED_RESET_MS = 1600;
 
-type Step = { n: number; title: string; body: string };
+type Step = { n: number; title: string; detail?: string };
 
-// Written for someone who has never seen an API console. Every step names the
-// exact button to press, and step 2 leads with the part that silently blocks
-// people: a key without credit on the account returns an error on first use.
+// Kept to fragments on purpose — a step someone can read in one glance while
+// switching back and forth to the console beats a paragraph they skip. Step 2
+// gets a warning line anyway, because skipping it is the one mistake that
+// makes a correctly-copied key fail and look broken.
 const steps: Step[] = [
-  {
-    n: 1,
-    title: 'Make an Anthropic account',
-    body: 'Open console.anthropic.com and sign up. Choose "Individual" when it asks how you\'ll use the API — that\'s the option for one person building on their own.',
-  },
-  {
-    n: 2,
-    title: 'Add credit — this part is required',
-    body: 'Go to Billing and buy usage credits. $5 is the minimum and is plenty. Skipping this is the most common mistake: a key on an account with no credit fails the moment you use it, and the error looks like the key is broken when it isn\'t.',
-  },
-  {
-    n: 3,
-    title: 'Create the key',
-    body: 'Go to API keys and press Create Key. It starts with "sk-ant-" and is shown to you exactly once — copy it right away. If you lose it, no harm done: delete it and make another.',
-  },
-  {
-    n: 4,
-    title: 'Paste it into dotted',
-    body: 'Come back here, open Settings → AI, tap Paste, then Save. Improve and Scan start working immediately.',
-  },
+  { n: 1, title: 'Sign up at console.anthropic.com', detail: 'Pick "Individual".' },
+  { n: 2, title: 'Add $5 credit', detail: '⚠️ Required — a key with no credit fails on first use.' },
+  { n: 3, title: 'Create Key', detail: 'Copy the sk-ant-… code right away.' },
+  { n: 4, title: 'Paste it here', detail: 'Settings → AI → Paste → Save.' },
 ];
 
-function StepCard({ step }: { step: Step }) {
+function StepRow({ step }: { step: Step }) {
   return (
     <View style={styles.step}>
       <View style={styles.stepNumber}>
@@ -46,17 +31,17 @@ function StepCard({ step }: { step: Step }) {
       </View>
       <View style={styles.stepText}>
         <Text style={styles.stepTitle}>{step.title}</Text>
-        <Text style={styles.stepBody}>{step.body}</Text>
+        {!!step.detail && <Text style={styles.stepDetail}>{step.detail}</Text>}
       </View>
     </View>
   );
 }
 
-function Note({ title, body }: { title: string; body: string }) {
+function FactRow({ label, value }: { label: string; value: string }) {
   return (
-    <View style={styles.note}>
-      <Text style={styles.noteTitle}>{title}</Text>
-      <Text style={styles.noteBody}>{body}</Text>
+    <View style={styles.fact}>
+      <Text style={styles.factLabel}>{label}</Text>
+      <Text style={styles.factValue}>{value}</Text>
     </View>
   );
 }
@@ -93,25 +78,15 @@ export function ApiKeyGuideScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll}>
         <View style={styles.hero}>
-          <DotSparklesIcon size={64} />
+          <DotSparklesIcon size={56} />
+          <Text style={styles.optionalTag}>Optional — everything else works without this</Text>
         </View>
 
-        <Text style={styles.lede}>
-          dotted has no server of its own. That keeps your notes on this device and the app free — but it also
-          means the AI features run on a key you own, billed to you directly by Anthropic. It takes about five
-          minutes to set up, once.
-        </Text>
-
-        <Note
-          title="You don't have to do this"
-          body="Writing, photo notes, the board, search, backup and sharing all work without a key. Only Improve and Scan need one."
-        />
-
-        <Hr />
-
-        {steps.map((step) => (
-          <StepCard key={step.n} step={step} />
-        ))}
+        <View style={styles.steps}>
+          {steps.map((step) => (
+            <StepRow key={step.n} step={step} />
+          ))}
+        </View>
 
         <View style={styles.linkBlock}>
           <Button title="Open console.anthropic.com" onPress={openConsole} block />
@@ -123,22 +98,11 @@ export function ApiKeyGuideScreen() {
           />
         </View>
 
-        <Hr />
-
-        <Note
-          title="What it costs"
-          body="You pay Anthropic for what you use, from the credit you bought. Improving a note runs a cent or two; scanning a page a little more, because the photo counts as input. $5 covers a few hundred uses. In the console you can set a spending limit so it can never surprise you."
-        />
-
-        <Note
-          title="Where your writing goes"
-          body="Only when you tap Improve or Capture: that note's text, or that one photo, goes straight from this app to Anthropic and the result comes back. Nothing passes through a dotted server, because there isn't one. Everything else you write never leaves the device."
-        />
-
-        <Note
-          title="Keeping the key safe"
-          body="It's stored in this phone's secure storage (Keystore on Android, Keychain on iOS) and never shown again after you save it. Treat it like a password — anyone with it can spend your credit. You can delete it from the console at any time and the app simply stops doing AI."
-        />
+        <View style={styles.facts}>
+          <FactRow label="Cost" value="~1–5¢ per use, from the $5 you add." />
+          <FactRow label="Your notes" value="Only what you Improve or Scan is sent — the rest stays on this phone." />
+          <FactRow label="The key" value="Stored in this phone's secure storage. Delete it anytime in the console." />
+        </View>
 
         <Button title="Go to Settings" variant="secondary" onPress={goSettings} block style={styles.settingsBtn} />
       </ScrollView>
@@ -151,9 +115,10 @@ const styles = StyleSheet.create({
   header: { paddingHorizontal: 16, paddingTop: 8, paddingBottom: 14, flexDirection: 'row', alignItems: 'center', gap: 12 },
   backBtn: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   title: { fontFamily: fonts.heading, fontSize: fontSizes.headerTitle, color: colors.text },
-  scroll: { paddingHorizontal: 20, paddingBottom: 32, gap: 18 },
-  hero: { alignItems: 'center', paddingTop: 4 },
-  lede: { fontFamily: fonts.body, fontSize: 15, lineHeight: 24, color: colors.text },
+  scroll: { paddingHorizontal: 20, paddingBottom: 32, gap: 22 },
+  hero: { alignItems: 'center', paddingTop: 4, gap: 8 },
+  optionalTag: { fontFamily: fonts.body, fontSize: 13, color: colors.neutral700, fontStyle: 'italic' },
+  steps: { gap: 18 },
   step: { flexDirection: 'row', gap: 14, alignItems: 'flex-start' },
   stepNumber: {
     width: 28,
@@ -165,19 +130,20 @@ const styles = StyleSheet.create({
     marginTop: 2,
   },
   stepNumberText: { fontFamily: fonts.heading, fontSize: 15, color: colors.surface },
-  stepText: { flex: 1, gap: 4 },
+  stepText: { flex: 1, gap: 2 },
   stepTitle: { fontFamily: fonts.heading, fontSize: 17, color: colors.text },
-  stepBody: { fontFamily: fonts.body, fontSize: 14, lineHeight: 22, color: colors.neutral700 },
-  note: {
+  stepDetail: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 19, color: colors.neutral700 },
+  linkBlock: { gap: 10 },
+  facts: {
     backgroundColor: colors.surface,
     borderRadius: radii.paper,
-    borderLeftWidth: 2,
-    borderLeftColor: colors.accent700,
+    borderWidth: 1,
+    borderColor: colors.divider,
     padding: 14,
-    gap: 5,
+    gap: 12,
   },
-  noteTitle: { fontFamily: fonts.heading, fontSize: 15, color: colors.text },
-  noteBody: { fontFamily: fonts.body, fontSize: 13.5, lineHeight: 21, color: colors.neutral700 },
-  linkBlock: { gap: 10 },
-  settingsBtn: { marginTop: 4 },
+  fact: { flexDirection: 'row', gap: 10, alignItems: 'flex-start' },
+  factLabel: { fontFamily: fonts.heading, fontSize: 13, color: colors.accent700, width: 74 },
+  factValue: { flex: 1, fontFamily: fonts.body, fontSize: 13, lineHeight: 19, color: colors.text },
+  settingsBtn: { marginTop: -4 },
 });
