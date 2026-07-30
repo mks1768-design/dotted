@@ -2,7 +2,7 @@ import { NoteKind, noteKinds } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
 import { ScreenName } from '../config/screens';
 import { generateId } from './id';
-import { AiQuality, AppState, Note, Tone } from './types';
+import { AddedSentence, AiQuality, AppState, CorrectionSegment, Note, Tone } from './types';
 
 export const initialState: AppState = {
   hydrated: false,
@@ -29,6 +29,11 @@ export const initialState: AppState = {
   explainedText: '',
   copiedCam: false,
   scanLoading: false,
+
+  corrected: false,
+  correctionSegments: [],
+  addedSentences: [],
+  correctionLoading: false,
 
   apiKey: null,
   aiError: null,
@@ -86,6 +91,10 @@ export type Action =
   | { type: 'SET_COPIED'; copied: boolean }
   | { type: 'SET_AI_ERROR'; error: string | null }
   | { type: 'INSERT_SCAN' }
+  | { type: 'SET_CORRECTION_LOADING'; loading: boolean }
+  | { type: 'CORRECTION_DONE'; segments: CorrectionSegment[]; addedSentences: AddedSentence[] }
+  | { type: 'RESET_CORRECTION' }
+  | { type: 'APPLY_CORRECTION'; corrected: string }
   | { type: 'DELETE_NOTE'; id: string }
   | { type: 'IMPORT_NOTES'; notes: Note[] };
 
@@ -154,6 +163,9 @@ export function reducer(state: AppState, action: Action): AppState {
         aiError: null,
         screen: screenForKind(n.kind),
         scanned: false,
+        corrected: false,
+        correctionSegments: [],
+        addedSentences: [],
       };
     }
 
@@ -196,6 +208,9 @@ export function reducer(state: AppState, action: Action): AppState {
         draftKind: action.kind,
         screen: screenForKind(action.kind),
         scanned: false,
+        corrected: false,
+        correctionSegments: [],
+        addedSentences: [],
         aiError: null,
       };
 
@@ -267,13 +282,48 @@ export function reducer(state: AppState, action: Action): AppState {
       return { ...state, copiedCam: action.copied };
 
     case 'SET_AI_ERROR':
-      return { ...state, aiError: action.error, rewriteLoading: false, scanLoading: false };
+      return { ...state, aiError: action.error, rewriteLoading: false, scanLoading: false, correctionLoading: false };
 
     case 'INSERT_SCAN':
       return {
         ...state,
         draftBody: (state.draftBody && state.draftBody.trim() ? state.draftBody + '\n\n' : '') + state.extractedText,
         screen: 'editor',
+      };
+
+    case 'SET_CORRECTION_LOADING':
+      return { ...state, correctionLoading: action.loading };
+
+    case 'CORRECTION_DONE':
+      return {
+        ...state,
+        corrected: true,
+        correctionSegments: action.segments,
+        addedSentences: action.addedSentences,
+        correctionLoading: false,
+        aiError: null,
+      };
+
+    // Back to a blank review for the same draft, so the reader can correct again.
+    case 'RESET_CORRECTION':
+      return {
+        ...state,
+        corrected: false,
+        correctionSegments: [],
+        addedSentences: [],
+        correctionLoading: false,
+        aiError: null,
+      };
+
+    case 'APPLY_CORRECTION':
+      return {
+        ...state,
+        draftBody: action.corrected,
+        screen: 'editor',
+        corrected: false,
+        correctionSegments: [],
+        addedSentences: [],
+        aiError: null,
       };
 
     case 'DELETE_NOTE': {

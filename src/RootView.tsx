@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScreenTransition } from './components/ScreenTransition';
 import { ApiKeyGuideScreen } from './screens/ApiKeyGuideScreen';
+import { CorrectScreen } from './screens/CorrectScreen';
 import { EditorScreen } from './screens/EditorScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ImproveScreen } from './screens/ImproveScreen';
@@ -39,6 +40,8 @@ export function RootView() {
         return <ImproveScreen />;
       case 'camera':
         return <ScanScreen />;
+      case 'correct':
+        return <CorrectScreen />;
       case 'settings':
         return <SettingsScreen />;
       case 'apiKeyGuide':

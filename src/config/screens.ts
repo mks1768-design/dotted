@@ -6,6 +6,7 @@ export type ScreenName =
   | 'editor'
   | 'ai'
   | 'camera'
+  | 'correct'
   | 'settings'
   | 'apiKeyGuide'
   | 'paperPicker';

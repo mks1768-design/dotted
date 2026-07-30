@@ -16,6 +16,9 @@ export type Note = {
 export type Tone = 'polish' | 'concise' | 'formal';
 export type AiQuality = 'standard' | 'high';
 
+export type CorrectionSegment = { text: string; changed: boolean };
+export type AddedSentence = { sentence: string; reason: string };
+
 export type AppState = {
   hydrated: boolean;
   hasOnboarded: boolean;
@@ -43,6 +46,11 @@ export type AppState = {
   explainedText: string;
   copiedCam: boolean;
   scanLoading: boolean;
+
+  corrected: boolean;
+  correctionSegments: CorrectionSegment[];
+  addedSentences: AddedSentence[];
+  correctionLoading: boolean;
 
   apiKey: string | null;
   aiError: string | null;

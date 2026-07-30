@@ -22,12 +22,13 @@ export function ImproveScreen() {
     switchWrite,
     switchImprove,
     switchScan,
+    switchCorrect,
     setTone,
     setImprovePrompt,
     backToEditor,
     applyRewrite,
   } = useNotes();
-  const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
+  const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan, correct: switchCorrect };
   const prompt = useFocusRing();
 
   const hasDraft = !!state.draftBody.trim();

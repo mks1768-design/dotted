@@ -239,6 +239,20 @@ export function DotSparklesIcon({ size = 52, color = colors.text, bgColor = colo
   );
 }
 
+/** CORRECT: a dot with a small checkmark, for proofreading/correction. */
+export function DotCheckIcon({ size = 52, color = colors.text, bgColor = colors.bg, accentColor = colors.accent700 }: IconProps) {
+  const h = (size / 52) * 48;
+  return (
+    <Svg width={size} height={h} viewBox="0 0 52 48">
+      <Circle cx="14" cy="28" r="9" fill={color} />
+      <Circle cx="11" cy="25" r="1.8" fill={bgColor} opacity={0.5} />
+      <Path d="M11 30 Q 14 33.5 18 29.5" fill="none" stroke={bgColor} strokeWidth={1.2} opacity={0.6} strokeLinecap="round" />
+      <Circle cx="38" cy="16" r="11" fill="none" stroke={accentColor} strokeWidth={2.6} />
+      <Polyline points="33 16.5 37 20.5 44 12" stroke={accentColor} strokeWidth={2.6} fill="none" strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
 /** Improve screen hero: a dot mid-rewrite — a rough line becoming a smooth one. */
 export function DotRewriteHero({ size = 120, color = colors.text, bgColor = colors.bg, accentColor = colors.accent700 }: IconProps) {
   const h = (size / 120) * 64;
@@ -251,6 +265,22 @@ export function DotRewriteHero({ size = 120, color = colors.text, bgColor = colo
       <Path d="M56 34 Q 76 28 96 34" fill="none" stroke={color} strokeWidth={3} strokeLinecap="round" />
       <Path d="M58 3l1.6 4.4L64 9l-4.4 1.6L58 15l-1.6-4.4L52 9l4.4-1.6L58 3z" fill={accentColor} />
       <Path d="M100 24l1 2.8L104 28l-2.8 1L100 32l-1-2.8L96 28l2.8-1z" fill={accentColor} />
+    </Svg>
+  );
+}
+
+/** Correct screen hero: a dot beside a checked line of writing. */
+export function DotCheckHero({ size = 120, color = colors.text, bgColor = colors.bg, accentColor = colors.accent700 }: IconProps) {
+  const h = (size / 120) * 64;
+  return (
+    <Svg width={size} height={h} viewBox="0 0 120 64">
+      <Circle cx="26" cy="38" r="14" fill={color} />
+      <Circle cx="20" cy="32" r="2.6" fill={bgColor} opacity={0.5} />
+      <Path d="M18 43 Q 26 50 34 42" fill="none" stroke={bgColor} strokeWidth={1.6} opacity={0.6} strokeLinecap="round" />
+      <Path d="M56 16 H98" stroke={colors.divider} strokeWidth={3} strokeLinecap="round" />
+      <Path d="M56 34 H88" stroke={colors.divider} strokeWidth={3} strokeLinecap="round" />
+      <Circle cx="94" cy="34" r="13" fill="none" stroke={accentColor} strokeWidth={3} />
+      <Polyline points="88 34.5 92.5 39 100 28.5" stroke={accentColor} strokeWidth={3} fill="none" strokeLinecap="round" strokeLinejoin="round" />
     </Svg>
   );
 }

@@ -21,6 +21,7 @@ export function EditorScreen() {
     switchWrite,
     switchImprove,
     switchScan,
+    switchCorrect,
     goPaperPicker,
     pickPhoto,
     removePhoto,
@@ -33,7 +34,7 @@ export function EditorScreen() {
   const title = useFocusRing();
   const body = useFocusRing();
   const photoBody = useFocusRing();
-  const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
+  const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan, correct: switchCorrect };
   const isPhoto = state.draftColor === 'photo';
   const currentPaper = paperStyleFor(state.draftColor);
 

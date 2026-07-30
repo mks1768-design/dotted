@@ -5,7 +5,7 @@ import React, { createContext, useCallback, useContext, useEffect, useMemo, useR
 import { Share } from 'react-native';
 import { NoteKind } from '../config/noteKinds';
 import { PaperStyleId } from '../config/paperStyles';
-import { AnthropicError, explainScan, rewriteNote } from '../services/anthropic';
+import { AnthropicError, correctWriting, explainScan, rewriteNote } from '../services/anthropic';
 import { exportBackup, importBackup } from '../services/backup';
 import { deleteSecureItem, getSecureItem, setSecureItem } from '../services/secureStorage';
 import { generateId } from './id';
@@ -36,6 +36,7 @@ type Ctx = {
   switchWrite: () => void;
   switchImprove: () => void;
   switchScan: () => void;
+  switchCorrect: () => void;
   goPaperPicker: () => void;
   selectPaperStyle: (color: PaperStyleId) => void;
   pickPhoto: () => Promise<void>;
@@ -45,6 +46,9 @@ type Ctx = {
   setTone: (tone: Tone) => void;
   setImprovePrompt: (prompt: string) => void;
   applyRewrite: () => Promise<void>;
+  runCorrection: () => Promise<void>;
+  resetCorrection: () => void;
+  applyCorrection: () => void;
   backToEditor: () => void;
   readPage: (photo: { uri: string; base64: string; mimeType: string }) => Promise<void>;
   pickPageFromLibrary: () => Promise<void>;
@@ -292,6 +296,35 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
+  const runCorrection = useCallback(async () => {
+    const { apiKey, draftBody } = stateRef.current;
+    if (!apiKey) {
+      dispatch({ type: 'SET_AI_ERROR', error: 'Add an Anthropic API key in Settings to correct writing.' });
+      return;
+    }
+    const myGeneration = draftGeneration.current;
+    dispatch({ type: 'SET_CORRECTION_LOADING', loading: true });
+    try {
+      const { segments, addedSentences } = await correctWriting(apiKey, draftBody, stateRef.current.aiQuality);
+      if (draftGeneration.current !== myGeneration) return; // the user has since moved to a different note
+      dispatch({ type: 'CORRECTION_DONE', segments, addedSentences });
+    } catch (err) {
+      if (draftGeneration.current !== myGeneration) return;
+      dispatch({ type: 'SET_AI_ERROR', error: err instanceof Error ? err.message : 'Correction failed.' });
+    }
+  }, []);
+
+  const resetCorrection = useCallback(() => dispatch({ type: 'RESET_CORRECTION' }), []);
+
+  const applyCorrection = useCallback(() => {
+    const { correctionSegments, addedSentences } = stateRef.current;
+    const corrected = correctionSegments.map((s) => s.text).join('');
+    const withAdded = addedSentences.length
+      ? `${corrected}\n\n${addedSentences.map((a) => a.sentence).join(' ')}`
+      : corrected;
+    dispatch({ type: 'APPLY_CORRECTION', corrected: withAdded });
+  }, []);
+
   const shareNote = useCallback(async (note: Note) => {
     const message = note.body?.trim() ? `${note.title}\n\n${note.body}` : note.title;
     try {
@@ -337,6 +370,7 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       switchWrite: () => switchKind('write'),
       switchImprove: () => switchKind('improve'),
       switchScan: () => switchKind('scan'),
+      switchCorrect: () => switchKind('correct'),
       goPaperPicker: () => dispatch({ type: 'GO_PAPER_PICKER' }),
       selectPaperStyle: (color) => dispatch({ type: 'SELECT_PAPER_STYLE', color }),
       pickPhoto,
@@ -346,6 +380,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       setTone: (tone) => dispatch({ type: 'SET_TONE', tone }),
       setImprovePrompt: (prompt) => dispatch({ type: 'SET_IMPROVE_PROMPT', prompt }),
       applyRewrite,
+      runCorrection,
+      resetCorrection,
+      applyCorrection,
       backToEditor: () => dispatch({ type: 'BACK_TO_EDITOR' }),
       readPage,
       pickPageFromLibrary,
@@ -369,6 +406,9 @@ export function NotesProvider({ children }: { children: React.ReactNode }) {
       openNote,
       pickPhoto,
       applyRewrite,
+      runCorrection,
+      resetCorrection,
+      applyCorrection,
       readPage,
       pickPageFromLibrary,
       rescanPage,

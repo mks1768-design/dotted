@@ -1,4 +1,4 @@
-import { AiQuality } from '../state/types';
+import { AddedSentence, AiQuality, CorrectionSegment } from '../state/types';
 
 const API_URL = 'https://api.anthropic.com/v1/messages';
 const API_VERSION = '2023-06-01';
@@ -107,6 +107,93 @@ export async function rewriteNote(
     truncated: 'This note is too long to rewrite in one go — try a shorter section.',
   });
   return textFromResponse(json) || body;
+}
+
+// Mirrors a teacher's word-level essay markup: keep the author's own writing
+// and only touch what's actually wrong, but every touch has to be visible.
+const CORRECTION_SYSTEM_PROMPT =
+  "You proofread a student's writing exactly the way a careful teacher marks up an essay: keep the entire original " +
+  'text and voice intact, and correct ONLY grammar, spelling, capitalization, verb tense, singular/plural, articles ' +
+  "(a/an/the), prepositions, pronouns, word choice, and word order — nothing else. Never paraphrase or rewrite a " +
+  "sentence that is already correct, and never change meaning, length, or tone beyond what a fix strictly requires.\n\n" +
+  'Return the corrected text as an ordered list of segments that reconstruct it exactly when concatenated with ' +
+  'nothing in between (preserve all original spacing and line breaks inside the segments). Every segment you did NOT ' +
+  'change must be an exact copy of that stretch of the original (changed: false). Every word or short phrase you ' +
+  'changed, replaced, added, deleted, capitalized, or reordered must be its own segment (changed: true) — never mark ' +
+  "a whole sentence changed for one fixed word, and never leave a changed word inside an unchanged segment.\n\n" +
+  'If, and only if, the writing genuinely needs a whole new sentence added (e.g. an unfinished thought), do not ' +
+  'splice it into the segments — list it separately in addedSentences with a short reason it was needed.\n\n' +
+  'Before answering, double-check silently: compare the original and your correction sentence by sentence, confirm ' +
+  'every altered word is captured in its own changed segment, confirm none was missed or left unmarked, and confirm ' +
+  'the segments reconstruct the corrected text with nothing added or dropped.';
+
+export async function correctWriting(
+  apiKey: string,
+  body: string,
+  quality: AiQuality = 'standard'
+): Promise<{ segments: CorrectionSegment[]; addedSentences: AddedSentence[] }> {
+  const json = await callMessages(apiKey, {
+    model: MODEL_FOR_QUALITY[quality],
+    max_tokens: MAX_TOKENS,
+    output_config: {
+      effort: EFFORT_FOR_QUALITY[quality],
+      format: {
+        type: 'json_schema',
+        schema: {
+          type: 'object',
+          properties: {
+            segments: {
+              type: 'array',
+              description: 'Ordered pieces that reconstruct the corrected text exactly when concatenated.',
+              items: {
+                type: 'object',
+                properties: {
+                  text: { type: 'string' },
+                  changed: { type: 'boolean' },
+                },
+                required: ['text', 'changed'],
+                additionalProperties: false,
+              },
+            },
+            addedSentences: {
+              type: 'array',
+              description: 'Wholly new sentences inserted beyond correcting the original, each with why it was added.',
+              items: {
+                type: 'object',
+                properties: {
+                  sentence: { type: 'string' },
+                  reason: { type: 'string' },
+                },
+                required: ['sentence', 'reason'],
+                additionalProperties: false,
+              },
+            },
+          },
+          required: ['segments', 'addedSentences'],
+          additionalProperties: false,
+        },
+      },
+    },
+    system: CORRECTION_SYSTEM_PROMPT,
+    messages: [{ role: 'user', content: `Proofread this writing:\n\n${body}` }],
+  });
+  assertUsable(json, {
+    refused: 'Claude declined to correct this writing.',
+    truncated: 'This is too long to correct in one go — try a shorter section.',
+  });
+  const raw = textFromResponse(json);
+  try {
+    const parsed = JSON.parse(raw);
+    const segments: CorrectionSegment[] = Array.isArray(parsed.segments)
+      ? parsed.segments.map((s: any) => ({ text: String(s.text ?? ''), changed: !!s.changed }))
+      : [{ text: body, changed: false }];
+    const addedSentences: AddedSentence[] = Array.isArray(parsed.addedSentences)
+      ? parsed.addedSentences.map((a: any) => ({ sentence: String(a.sentence ?? ''), reason: String(a.reason ?? '') }))
+      : [];
+    return { segments, addedSentences };
+  } catch {
+    return { segments: [{ text: body, changed: false }], addedSentences: [] };
+  }
 }
 
 export async function explainScan(

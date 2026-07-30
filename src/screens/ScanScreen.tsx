@@ -78,9 +78,20 @@ function Viewfinder({
 }
 
 export function ScanScreen() {
-  const { state, backToHome, switchWrite, switchImprove, switchScan, readPage, pickPageFromLibrary, rescanPage, copyScan, insertScan } =
-    useNotes();
-  const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan };
+  const {
+    state,
+    backToHome,
+    switchWrite,
+    switchImprove,
+    switchScan,
+    switchCorrect,
+    readPage,
+    pickPageFromLibrary,
+    rescanPage,
+    copyScan,
+    insertScan,
+  } = useNotes();
+  const kindHandlers = { write: switchWrite, improve: switchImprove, scan: switchScan, correct: switchCorrect };
   const hasKey = !!state.apiKey;
 
   const cameraRef = useRef<CameraView | null>(null);
