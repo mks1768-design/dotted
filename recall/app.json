@@ -1,0 +1,18 @@
+{
+  "expo": {
+    "name": "Recall",
+    "slug": "recall",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "bundleIdentifier": "com.mks1768.recall",
+      "supportsTablet": true
+    },
+    "android": {
+      "package": "com.mks1768.recall",
+      "versionCode": 1
+    },
+    "web": {}
+  }
+}
