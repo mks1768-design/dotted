@@ -5,18 +5,20 @@ import { AppState as RNAppState } from 'react-native';
 import { cancelReminders, requestNotificationPermission, scheduleReminders } from '../services/notifications';
 import { initialState, reducer } from './reducer';
 import { shuffled } from './shuffle';
-import { AppState, Card, ReminderInterval, Reminders, Stats } from './types';
+import { AppState, Card, DeckReminders, ReminderMode, Stats } from './types';
 
 const DECKS_STORAGE_KEY = '@recall/decks';
 const STATS_STORAGE_KEY = '@recall/stats';
-const REMINDERS_STORAGE_KEY = '@recall/reminders';
+const REMINDERS_STORAGE_KEY = '@recall/deckReminders';
 
-const DEFAULT_STATS: Stats = { streak: 0, lastStudyDayKey: null, xp: 0 };
-const DEFAULT_REMINDERS: Reminders = { enabled: false, intervalMinutes: 180 };
+const DEFAULT_STATS: Stats = { streak: 0, lastStudyDayKey: null, xp: 0, practicedDays: [] };
+const DEFAULT_REMINDERS: DeckReminders = {};
 
 type Ctx = {
   state: AppState;
   goHome: () => void;
+  goStreak: () => void;
+  goDecks: () => void;
   goSettings: () => void;
   newDeck: (name: string, emoji: string) => void;
   openDeck: (id: string) => void;
@@ -30,12 +32,12 @@ type Ctx = {
   saveCard: () => void;
   deleteCard: (id: string) => void;
   startStudy: (deckId: string) => void;
+  startMixStudy: () => void;
   answer: (correct: boolean) => void;
   continueStudy: () => void;
   exitStudy: () => void;
   finishResults: () => void;
-  setRemindersEnabled: (enabled: boolean) => Promise<void>;
-  setReminderInterval: (minutes: ReminderInterval) => void;
+  setDeckReminder: (deckId: string, mode: ReminderMode) => Promise<void>;
 };
 
 const StudyCtx = createContext<Ctx | null>(null);
@@ -80,18 +82,19 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(REMINDERS_STORAGE_KEY, JSON.stringify(state.reminders)).catch(() => {});
   }, [state.reminders, state.hydrated]);
 
-  // Keeps the notification queue matching the current reminder settings and
-  // deck contents. Re-runs on deck edits too, so a freshly-added card can
-  // show up in a reminder instead of only ones that existed when it was
-  // first turned on.
+  // Keeps the notification queue matching each deck's own reminder setting
+  // and its current cards. Re-runs on deck edits too, so a freshly-added
+  // card can show up in a reminder instead of only ones that existed when a
+  // deck's reminder was first turned on.
   useEffect(() => {
     if (!state.hydrated) return;
-    if (!state.reminders.enabled) {
+    const anyEnabled = Object.values(state.reminders).some((m) => m.type !== 'off');
+    if (!anyEnabled) {
       cancelReminders().catch(() => {});
       return;
     }
-    scheduleReminders(state.decks, state.reminders.intervalMinutes).catch(() => {});
-  }, [state.hydrated, state.reminders.enabled, state.reminders.intervalMinutes, state.decks]);
+    scheduleReminders(state.decks, state.reminders).catch(() => {});
+  }, [state.hydrated, state.reminders, state.decks]);
 
   // The scheduled queue is a finite batch of one-shot notifications — top it
   // back up whenever the app returns to the foreground so a long stretch in
@@ -100,8 +103,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     const sub = RNAppState.addEventListener('change', (next) => {
       if (next !== 'active') return;
       const s = stateRef.current;
-      if (s.hydrated && s.reminders.enabled) {
-        scheduleReminders(s.decks, s.reminders.intervalMinutes).catch(() => {});
+      if (s.hydrated && Object.values(s.reminders).some((m) => m.type !== 'off')) {
+        scheduleReminders(s.decks, s.reminders).catch(() => {});
       }
     });
     return () => sub.remove();
@@ -116,7 +119,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       const deck = stateRef.current.decks.find((d) => d.id === deckId);
       if (!deck || deck.cards.length === 0) return;
       const queue = shuffled(deck.cards.map((c) => c.id));
-      dispatch({ type: 'START_STUDY', deckId, queue });
+      dispatch({ type: 'START_STUDY', mode: 'deck', deckId, queue });
     });
     return () => sub.remove();
   }, []);
@@ -126,23 +129,31 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       const deck = state.decks.find((d) => d.id === deckId);
       if (!deck || deck.cards.length === 0) return;
       const queue = shuffled(deck.cards.map((c) => c.id));
-      dispatch({ type: 'START_STUDY', deckId, queue });
+      dispatch({ type: 'START_STUDY', mode: 'deck', deckId, queue });
     },
     [state.decks]
   );
 
-  const setRemindersEnabled = useCallback(async (enabled: boolean) => {
-    if (enabled) {
+  const startMixStudy = useCallback(() => {
+    const allCardIds = state.decks.flatMap((d) => d.cards.map((c) => c.id));
+    if (allCardIds.length < 2) return;
+    dispatch({ type: 'START_STUDY', mode: 'mix', deckId: null, queue: shuffled(allCardIds) });
+  }, [state.decks]);
+
+  const setDeckReminder = useCallback(async (deckId: string, mode: ReminderMode) => {
+    if (mode.type !== 'off') {
       const granted = await requestNotificationPermission();
       if (!granted) return;
     }
-    dispatch({ type: 'SET_REMINDERS_ENABLED', enabled });
+    dispatch({ type: 'SET_DECK_REMINDER', deckId, mode });
   }, []);
 
   const value = useMemo<Ctx>(
     () => ({
       state,
       goHome: () => dispatch({ type: 'GO_HOME' }),
+      goStreak: () => dispatch({ type: 'GO_STREAK' }),
+      goDecks: () => dispatch({ type: 'GO_DECKS' }),
       goSettings: () => dispatch({ type: 'GO_SETTINGS' }),
       newDeck: (name, emoji) => dispatch({ type: 'NEW_DECK', name, emoji }),
       openDeck: (id) => dispatch({ type: 'OPEN_DECK', id }),
@@ -156,14 +167,14 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       saveCard: () => dispatch({ type: 'SAVE_CARD' }),
       deleteCard: (id) => dispatch({ type: 'DELETE_CARD', id }),
       startStudy,
+      startMixStudy,
       answer: (correct) => dispatch({ type: 'ANSWER', correct }),
       continueStudy: () => dispatch({ type: 'CONTINUE' }),
       exitStudy: () => dispatch({ type: 'EXIT_STUDY' }),
       finishResults: () => dispatch({ type: 'FINISH_RESULTS' }),
-      setRemindersEnabled,
-      setReminderInterval: (minutes) => dispatch({ type: 'SET_REMINDER_INTERVAL', minutes }),
+      setDeckReminder,
     }),
-    [state, startStudy, setRemindersEnabled]
+    [state, startStudy, startMixStudy, setDeckReminder]
   );
 
   return <StudyCtx.Provider value={value}>{children}</StudyCtx.Provider>;

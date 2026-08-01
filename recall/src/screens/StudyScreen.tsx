@@ -5,36 +5,44 @@ import { HeartsRow, PrimaryButton, ProgressBar } from '../components/ui';
 import { XIcon } from '../icons';
 import { useStudy } from '../state/StudyContext';
 import { shuffled } from '../state/shuffle';
+import { Card } from '../state/types';
 import { colors, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 const MAX_CHOICES = 4;
 
 export function StudyScreen() {
   const { state, exitStudy, answer, continueStudy } = useStudy();
-  const deck = state.decks.find((d) => d.id === state.studyDeckId);
   const [selected, setSelected] = useState<string | null>(null);
 
+  // In 'deck' mode the pool is just that one deck; in 'mix' mode it's every
+  // deck, since the card being asked about could be from any of them.
+  const poolDecks =
+    state.studyMode === 'mix' ? state.decks : state.decks.filter((d) => d.id === state.studyDeckId);
+  const poolCards = poolDecks.flatMap((d) => d.cards);
+
   const cardId = state.studyQueue[state.studyIndex];
-  const card = deck?.cards.find((c) => c.id === cardId);
+  const card: Card | undefined = poolCards.find((c) => c.id === cardId);
+  const sourceDeck = state.studyMode === 'deck' ? poolDecks[0] : null;
 
   useEffect(() => {
     setSelected(null);
   }, [state.studyIndex]);
 
   const choices = useMemo(() => {
-    if (!deck || !card) return [];
-    const distractorPool = shuffled(deck.cards.filter((c) => c.id !== card.id).map((c) => c.back));
+    if (!card) return [];
+    const distractorPool = shuffled(poolCards.filter((c) => c.id !== card.id).map((c) => c.back));
     const distractors = distractorPool.slice(0, MAX_CHOICES - 1);
     return shuffled([card.back, ...distractors]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [deck?.id, card?.id]);
+  }, [card?.id]);
 
-  if (!deck || !card) {
+  if (poolDecks.length === 0 || !card) {
     exitStudy();
     return null;
   }
 
   const answered = state.answerState !== 'idle';
+  const sourceLabel = sourceDeck ? sourceDeck.name : 'Mix review';
 
   const onSelect = (option: string) => {
     if (answered) return;
@@ -62,7 +70,7 @@ export function StudyScreen() {
       </View>
 
       <View style={styles.content}>
-        <Text style={styles.prompt}>Choose the match</Text>
+        <Text style={styles.prompt}>{sourceLabel} · Choose the match</Text>
         <View style={styles.cardFace}>
           <Text style={styles.cardFront}>{card.front}</Text>
         </View>

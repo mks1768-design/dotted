@@ -8,18 +8,18 @@ import { Card } from '../state/types';
 import { colors, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 export function DeckScreen() {
-  const { state, goHome, editCard, newCard, deleteCard, startStudy } = useStudy();
+  const { state, goDecks, editCard, newCard, deleteCard, startStudy } = useStudy();
   const deck = state.decks.find((d) => d.id === state.activeDeckId);
 
   if (!deck) {
-    goHome();
+    goDecks();
     return null;
   }
 
   return (
     <SafeAreaView style={styles.root} edges={['top', 'bottom']}>
       <View style={styles.header}>
-        <Pressable onPress={goHome} hitSlop={10} style={styles.backHit} accessibilityRole="button" accessibilityLabel="Back">
+        <Pressable onPress={goDecks} hitSlop={10} style={styles.backHit} accessibilityRole="button" accessibilityLabel="Back">
           <ChevronLeftIcon />
         </Pressable>
         <Text style={styles.title} numberOfLines={1}>

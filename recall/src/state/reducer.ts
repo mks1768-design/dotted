@@ -1,6 +1,6 @@
 import { todayKey, yesterdayKey } from './date';
 import { generateId } from './id';
-import { AppState, Card, Deck, ReminderInterval } from './types';
+import { AppState, Card, Deck, ReminderMode, StudyMode } from './types';
 
 const STARTING_HEARTS = 5;
 const XP_PER_CORRECT = 10;
@@ -9,8 +9,8 @@ export const initialState: AppState = {
   hydrated: false,
   screen: 'home',
   decks: [],
-  stats: { streak: 0, lastStudyDayKey: null, xp: 0 },
-  reminders: { enabled: false, intervalMinutes: 180 },
+  stats: { streak: 0, lastStudyDayKey: null, xp: 0, practicedDays: [] },
+  reminders: {},
 
   activeDeckId: null,
 
@@ -18,6 +18,7 @@ export const initialState: AppState = {
   draftFront: '',
   draftBack: '',
 
+  studyMode: 'deck',
   studyDeckId: null,
   studyQueue: [],
   studyIndex: 0,
@@ -31,9 +32,10 @@ export const initialState: AppState = {
 export type Action =
   | { type: 'HYDRATE'; decks: Deck[]; stats: AppState['stats']; reminders: AppState['reminders'] }
   | { type: 'GO_HOME' }
+  | { type: 'GO_STREAK' }
+  | { type: 'GO_DECKS' }
   | { type: 'GO_SETTINGS' }
-  | { type: 'SET_REMINDERS_ENABLED'; enabled: boolean }
-  | { type: 'SET_REMINDER_INTERVAL'; minutes: ReminderInterval }
+  | { type: 'SET_DECK_REMINDER'; deckId: string; mode: ReminderMode }
   | { type: 'NEW_DECK'; name: string; emoji: string }
   | { type: 'OPEN_DECK'; id: string }
   | { type: 'RENAME_DECK'; id: string; name: string }
@@ -45,15 +47,11 @@ export type Action =
   | { type: 'SET_DRAFT_BACK'; text: string }
   | { type: 'SAVE_CARD' }
   | { type: 'DELETE_CARD'; id: string }
-  | { type: 'START_STUDY'; deckId: string; queue: string[] }
+  | { type: 'START_STUDY'; mode: StudyMode; deckId: string | null; queue: string[] }
   | { type: 'ANSWER'; correct: boolean }
   | { type: 'CONTINUE' }
   | { type: 'EXIT_STUDY' }
   | { type: 'FINISH_RESULTS' };
-
-function findDeck(state: AppState, id: string | null): Deck | undefined {
-  return state.decks.find((d) => d.id === id);
-}
 
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
@@ -63,14 +61,17 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'GO_HOME':
       return { ...state, screen: 'home', activeDeckId: null };
 
+    case 'GO_STREAK':
+      return { ...state, screen: 'streak' };
+
+    case 'GO_DECKS':
+      return { ...state, screen: 'decks' };
+
     case 'GO_SETTINGS':
       return { ...state, screen: 'settings' };
 
-    case 'SET_REMINDERS_ENABLED':
-      return { ...state, reminders: { ...state.reminders, enabled: action.enabled } };
-
-    case 'SET_REMINDER_INTERVAL':
-      return { ...state, reminders: { ...state.reminders, intervalMinutes: action.minutes } };
+    case 'SET_DECK_REMINDER':
+      return { ...state, reminders: { ...state.reminders, [action.deckId]: action.mode } };
 
     case 'NEW_DECK': {
       const deck: Deck = { id: generateId(), name: action.name, emoji: action.emoji, cards: [], createdAt: Date.now() };
@@ -83,13 +84,16 @@ export function reducer(state: AppState, action: Action): AppState {
     case 'RENAME_DECK':
       return { ...state, decks: state.decks.map((d) => (d.id === action.id ? { ...d, name: action.name } : d)) };
 
-    case 'DELETE_DECK':
+    case 'DELETE_DECK': {
+      const { [action.id]: _removed, ...reminders } = state.reminders;
       return {
         ...state,
         decks: state.decks.filter((d) => d.id !== action.id),
-        screen: state.activeDeckId === action.id ? 'home' : state.screen,
+        reminders,
+        screen: state.activeDeckId === action.id ? 'decks' : state.screen,
         activeDeckId: state.activeDeckId === action.id ? null : state.activeDeckId,
       };
+    }
 
     case 'NEW_CARD':
       return { ...state, editingCardId: null, draftFront: '', draftBack: '', screen: 'cardEditor' };
@@ -131,6 +135,7 @@ export function reducer(state: AppState, action: Action): AppState {
       return {
         ...state,
         screen: 'study',
+        studyMode: action.mode,
         studyDeckId: action.deckId,
         studyQueue: action.queue,
         studyIndex: 0,
@@ -169,7 +174,8 @@ export function reducer(state: AppState, action: Action): AppState {
         const alreadyToday = state.stats.lastStudyDayKey === today;
         const continuesStreak = state.stats.lastStudyDayKey === yesterdayKey();
         const streak = alreadyToday ? state.stats.streak : continuesStreak ? state.stats.streak + 1 : 1;
-        stats = { streak, lastStudyDayKey: today, xp: state.stats.xp + state.xpEarned };
+        const practicedDays = alreadyToday ? state.stats.practicedDays : [...state.stats.practicedDays, today];
+        stats = { streak, lastStudyDayKey: today, xp: state.stats.xp + state.xpEarned, practicedDays };
       }
 
       return {
@@ -181,7 +187,7 @@ export function reducer(state: AppState, action: Action): AppState {
     }
 
     case 'EXIT_STUDY':
-      return { ...state, screen: 'deck', studyDeckId: null, studyQueue: [] };
+      return { ...state, screen: state.studyMode === 'mix' ? 'home' : 'deck', studyDeckId: null, studyQueue: [] };
 
     case 'FINISH_RESULTS':
       return { ...state, screen: 'home', activeDeckId: null, studyDeckId: null, studyQueue: [] };
@@ -189,8 +195,4 @@ export function reducer(state: AppState, action: Action): AppState {
     default:
       return state;
   }
-}
-
-export function deckById(state: AppState, id: string | null): Deck | undefined {
-  return findDeck(state, id);
 }
