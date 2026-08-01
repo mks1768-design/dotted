@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { PrimaryButton } from '../components/ui';
-import { BoltIcon, FlameIcon, PlusIcon } from '../icons';
+import { BoltIcon, FlameIcon, GearIcon, PlusIcon } from '../icons';
 import { useStudy } from '../state/StudyContext';
 import { Deck } from '../state/types';
 import { colors, fontSizes, radii, shadows, spacing } from '../theme/tokens';
@@ -10,7 +10,7 @@ import { colors, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 const EMOJI_CHOICES = ['📚', '🧠', '🗺️', '🧪', '🎵', '🍜', '💻', '🌍'];
 
 export function HomeScreen() {
-  const { state, openDeck, newDeck, deleteDeck } = useStudy();
+  const { state, openDeck, newDeck, deleteDeck, goSettings } = useStudy();
   const [creating, setCreating] = useState(false);
   const [name, setName] = useState('');
   const [emoji, setEmoji] = useState(EMOJI_CHOICES[0]);
@@ -37,6 +37,9 @@ export function HomeScreen() {
             <BoltIcon size={16} />
             <Text style={styles.statText}>{state.stats.xp}</Text>
           </View>
+          <Pressable onPress={goSettings} hitSlop={10} style={styles.settingsHit} accessibilityRole="button" accessibilityLabel="Settings">
+            <GearIcon size={20} color={colors.textMuted} />
+          </Pressable>
         </View>
       </View>
 
@@ -142,6 +145,7 @@ const styles = StyleSheet.create({
     ...shadows.sm,
   },
   statText: { fontWeight: '800', color: colors.text, fontSize: fontSizes.smallLabel },
+  settingsHit: { padding: 4 },
   listContent: { paddingHorizontal: spacing.screenPaddingH, paddingBottom: 100, gap: spacing.gapTight },
   empty: { alignItems: 'center', paddingTop: 60, gap: 6 },
   emptyTitle: { fontSize: fontSizes.sectionTitle, fontWeight: '800', color: colors.text },

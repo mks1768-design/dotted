@@ -1,6 +1,6 @@
 import { todayKey, yesterdayKey } from './date';
 import { generateId } from './id';
-import { AppState, Card, Deck } from './types';
+import { AppState, Card, Deck, ReminderInterval } from './types';
 
 const STARTING_HEARTS = 5;
 const XP_PER_CORRECT = 10;
@@ -10,6 +10,7 @@ export const initialState: AppState = {
   screen: 'home',
   decks: [],
   stats: { streak: 0, lastStudyDayKey: null, xp: 0 },
+  reminders: { enabled: false, intervalMinutes: 180 },
 
   activeDeckId: null,
 
@@ -28,8 +29,11 @@ export const initialState: AppState = {
 };
 
 export type Action =
-  | { type: 'HYDRATE'; decks: Deck[]; stats: AppState['stats'] }
+  | { type: 'HYDRATE'; decks: Deck[]; stats: AppState['stats']; reminders: AppState['reminders'] }
   | { type: 'GO_HOME' }
+  | { type: 'GO_SETTINGS' }
+  | { type: 'SET_REMINDERS_ENABLED'; enabled: boolean }
+  | { type: 'SET_REMINDER_INTERVAL'; minutes: ReminderInterval }
   | { type: 'NEW_DECK'; name: string; emoji: string }
   | { type: 'OPEN_DECK'; id: string }
   | { type: 'RENAME_DECK'; id: string; name: string }
@@ -54,10 +58,19 @@ function findDeck(state: AppState, id: string | null): Deck | undefined {
 export function reducer(state: AppState, action: Action): AppState {
   switch (action.type) {
     case 'HYDRATE':
-      return { ...state, decks: action.decks, stats: action.stats, hydrated: true };
+      return { ...state, decks: action.decks, stats: action.stats, reminders: action.reminders, hydrated: true };
 
     case 'GO_HOME':
       return { ...state, screen: 'home', activeDeckId: null };
+
+    case 'GO_SETTINGS':
+      return { ...state, screen: 'settings' };
+
+    case 'SET_REMINDERS_ENABLED':
+      return { ...state, reminders: { ...state.reminders, enabled: action.enabled } };
+
+    case 'SET_REMINDER_INTERVAL':
+      return { ...state, reminders: { ...state.reminders, intervalMinutes: action.minutes } };
 
     case 'NEW_DECK': {
       const deck: Deck = { id: generateId(), name: action.name, emoji: action.emoji, cards: [], createdAt: Date.now() };

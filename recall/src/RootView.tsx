@@ -5,6 +5,7 @@ import { CardEditorScreen } from './screens/CardEditorScreen';
 import { DeckScreen } from './screens/DeckScreen';
 import { HomeScreen } from './screens/HomeScreen';
 import { ResultsScreen } from './screens/ResultsScreen';
+import { SettingsScreen } from './screens/SettingsScreen';
 import { StudyScreen } from './screens/StudyScreen';
 
 export function RootView() {
@@ -24,6 +25,8 @@ export function RootView() {
         return <StudyScreen />;
       case 'results':
         return <ResultsScreen />;
+      case 'settings':
+        return <SettingsScreen />;
       default:
         return <HomeScreen />;
     }

@@ -1,4 +1,4 @@
-export type ScreenName = 'home' | 'deck' | 'cardEditor' | 'study' | 'results';
+export type ScreenName = 'home' | 'deck' | 'cardEditor' | 'study' | 'results' | 'settings';
 
 export interface Card {
   id: string;
@@ -22,11 +22,20 @@ export interface Stats {
 
 export type AnswerState = 'idle' | 'correct' | 'wrong';
 
+/** Minutes between reminder notifications. */
+export type ReminderInterval = 30 | 60 | 180 | 360;
+
+export interface Reminders {
+  enabled: boolean;
+  intervalMinutes: ReminderInterval;
+}
+
 export interface AppState {
   hydrated: boolean;
   screen: ScreenName;
   decks: Deck[];
   stats: Stats;
+  reminders: Reminders;
 
   activeDeckId: string | null;
 
