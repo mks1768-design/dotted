@@ -7,10 +7,10 @@ import { ReminderInterval } from '../state/types';
 import { colors, fontSizes, radii, shadows, spacing } from '../theme/tokens';
 
 const INTERVALS: { minutes: ReminderInterval; label: string }[] = [
-  { minutes: 30, label: '30분마다' },
-  { minutes: 60, label: '1시간마다' },
-  { minutes: 180, label: '3시간마다' },
-  { minutes: 360, label: '6시간마다' },
+  { minutes: 30, label: 'Every 30 min' },
+  { minutes: 60, label: 'Every hour' },
+  { minutes: 180, label: 'Every 3 hours' },
+  { minutes: 360, label: 'Every 6 hours' },
 ];
 
 export function SettingsScreen() {
@@ -31,8 +31,8 @@ export function SettingsScreen() {
         <View style={styles.card}>
           <View style={styles.row}>
             <View style={{ flex: 1 }}>
-              <Text style={styles.rowTitle}>복습 알림</Text>
-              <Text style={styles.rowBody}>일정 시간마다 카드 한 장을 알림으로 보여줘요.</Text>
+              <Text style={styles.rowTitle}>Study reminders</Text>
+              <Text style={styles.rowBody}>Get a notification with a card on it at a set interval.</Text>
             </View>
             <Switch
               value={enabled}
