@@ -11,33 +11,35 @@ dotted — a quiet place to write
 
 ## Short description (80 characters max)
 ```
-A calm notes app — write, snap a page, browse it all. AI is optional.
+A calm notes app — write, journal, snap a page, browse it all. AI optional.
 ```
 
 ## Full description (4000 characters max)
 
 ```
-dotted is a notes app built around one idea: writing should feel good before it needs to do anything clever.
+dotted is a notebook that doesn't ask anything of you first — no account, no sign-up, no loading screen. Open it, and start writing.
+
+It's built for the way people actually keep notes: quick text, a photo worth remembering, or a full page scanned straight out of a book. Everything lives in one calm, quiet place.
 
 WRITE
-Plain notes, photo notes with a short caption, or a page styled to your taste — pick what fits and go.
+Plain text notes, photo notes with a short caption, or a note styled with a paper texture that fits your mood. Morning pages, grocery lists, half-formed ideas — dotted doesn't care how tidy it is.
 
 BROWSE
-See everything as a list, or switch to a Pinterest-style board when you've got a lot of photo notes to scan at a glance.
+Switch between a simple list and a Pinterest-style board, so photo-heavy notes are easy to scan at a glance instead of scrolling through a wall of text.
 
 SCAN A PAGE
-Point the camera at a page from a book or document and pull it straight into a note.
+Point your camera at a page — a book, a handwritten note, a document — and pull it straight into a note, ready to read back later.
 
-YOURS, ON THIS DEVICE
-No account, no login, no server. Everything you write stays on this phone. Export a backup file anytime, and import it back whenever you need to.
+PRIVATE BY DESIGN
+There is no server behind dotted, no account, and no login. Every note stays on your phone. Back everything up to a file whenever you like, and bring it back with one tap.
 
-AI, IF YOU WANT IT
-Improve (rewrite a note) and Scan's explanation feature run on Claude, from Anthropic. dotted has no server of its own, so using these means adding your own Anthropic API key — the app walks you through it, and it takes about five minutes. Everything else works the same with or without one.
+AI, ENTIRELY OPTIONAL
+Two features run on Claude, from Anthropic: Improve, which rewrites a note for you, and Scan's explain feature, which reads a scanned page back in plain language. Since dotted has no server of its own, using them means adding your own Anthropic API key — a five-minute one-time setup, walked through inside the app. Skip it entirely and the rest of dotted works exactly the same.
 
 In short:
-• A complete notes app on its own — AI is a bonus, not a requirement
-• Everything stored on-device
-• No ads, no tracking, no account required
+- A complete notebook on its own, AI is a bonus, never a requirement
+- Everything stored on your device, nothing else
+- No ads, no tracking, no account
 ```
 
 ---
