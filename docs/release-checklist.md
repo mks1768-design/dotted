@@ -56,8 +56,8 @@ eas build -p android --profile production
 ### 4단계 — 콘솔에서 앱 만들기
 
 1. 플레이 콘솔 → **"앱 만들기"**
-2. 앱 이름: `dotted — 조용히 쓰는 메모` (또는 원하는 이름, `docs/store-listing.md` 참고)
-3. 기본 언어: 한국어
+2. 앱 이름: `dotted — a quiet place to write` (영어로 확정, `docs/store-listing.md` 참고)
+3. 기본 언어: 영어(미국) — 앱 화면 자체가 영어라 이걸로 확정함
 4. 앱/게임: 앱
 5. 무료/유료: **무료**
 
