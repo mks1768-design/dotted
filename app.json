@@ -12,7 +12,7 @@
     },
     "android": {
       "package": "com.mks1768.dotted",
-      "versionCode": 1,
+      "versionCode": 10,
       "adaptiveIcon": {
         "backgroundColor": "#e9e3da",
         "foregroundImage": "./assets/android-icon-foreground.png",
